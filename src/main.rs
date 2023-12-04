@@ -1,7 +1,7 @@
-use commands::config::{
+use commands::{config::{
     select::command_config_select,
     show::{command_config_show, command_config_show_nodes, command_config_show_messages, command_config_show_types},
-};
+}, gen::command_gen};
 
 pub mod commands;
 pub mod local;
@@ -37,6 +37,14 @@ fn cli() -> clap::Command {
                         .arg(clap::Arg::new("path").index(1).required(true)),
                 ), 
         )
+        .subcommand(
+            clap::Command::new("generate")
+            .alias("gen")
+            .arg(clap::Arg::new("node")
+                .short('c')
+                .long("node")
+                .required(true))
+            )
 }
 
 fn main() {
@@ -63,6 +71,10 @@ fn main() {
                 command_config_select(path);
             }
             _ => unreachable!(),
+        },
+        Some(("generate", sub_matches)) => {
+            let node_name : &String = sub_matches.get_one("node").unwrap();
+            command_gen(node_name);
         },
         _ => unreachable!(),
     }

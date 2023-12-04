@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.4.7", features = ["derive"] }
 can-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-config-rs.git"}
+can-cpp-codegen-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-cpp-codegen-rs.git"}
 can-yaml-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-yaml-config-rs.git" }
