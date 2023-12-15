@@ -4,8 +4,7 @@ use can_config_rs::config;
 
 
 pub fn load_config_path() -> String {
-    //TODO load from local storage
-    "test.yaml".to_owned()
+    std::env::var("CONFIG_PATH").unwrap_or_else(|_| "default_config.yaml".to_owned())
 }
 
 pub fn load_config() -> config::NetworkRef {
