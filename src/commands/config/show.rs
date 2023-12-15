@@ -21,12 +21,18 @@ pub fn command_config_show_nodes() {
 
 // to invoke run $cargo run -- config show messages
 pub fn command_config_show_messages() {
-    let network_config : config::NetworkRef = load_config();
-    // TODO log nodes in the network_config to the console!
+    let network_config: config::NetworkRef = load_config();
+    println!("Messages in Network:");
+    for message in network_config.messages() { // Assuming a method `messages` exists
+        // println!("{message}");
+    }
 }
 
 // to invoke run $cargo run -- config show types
 pub fn command_config_show_types() {
-    let network_config : config::NetworkRef = load_config();
-    // TODO log nodes in the network_config to the console!
+    let network_config: config::NetworkRef = load_config();
+    println!("Types in Network:");
+    for type_ in network_config.types() { // Assuming a method `types` exists
+        // println!("{type_}");
+    }
 }
