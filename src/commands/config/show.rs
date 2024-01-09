@@ -19,6 +19,10 @@ pub fn command_config_show() -> Result<()> {
         }
         ConfigLocation::None => println!("No Configuration Set"),
     }
+    let network = appdata.load_network_config()?;
+    println!("Network Baudrate: {}", network.baudrate());
+    println!("Network Build Time: {}", network.build_time());
+
     Ok(())
 }
 
@@ -44,8 +48,6 @@ pub fn command_config_show_nodes() -> Result<()> {
         for rx_message in node.rx_messages() {
             println!("    {}", rx_message.name());
         }
-
-        // Further attributes like commands, streams
     }
 
     Ok(())
@@ -66,7 +68,14 @@ pub fn command_config_show_messages() -> Result<()> {
         if let Some(description) = message.description() {
             println!("  Description: {}", description);
         }
-        // Additional details about encoding, signals
+        // Add encoding and signal details
+        if let Some(encoding) = message.encoding() {
+            println!("  Encoding:");
+        }
+        println!("  Signals:");
+        for signal in message.signals() {
+            println!("    Signal: {}", signal.name());
+        }
     }
 
     Ok(())
@@ -87,5 +96,18 @@ pub fn command_config_show_types() -> Result<()> {
 
     Ok(())
 }
+
+
+// to invoke run $cargo run -- config help
+pub fn command_config_help() -> Result<()> {
+    println!("Available Commands:");
+    println!("  config show        - Show the current configuration details");
+    println!("  config show nodes  - List all nodes in the network");
+    println!("  config show messages - Show all messages in the network");
+    println!("  config show types  - List all types in the network");
+    // Add more commands as needed
+    Ok(())
+}
+
 
 
