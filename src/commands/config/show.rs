@@ -105,7 +105,6 @@ pub fn command_config_help() -> Result<()> {
     println!("  config show nodes  - List all nodes in the network");
     println!("  config show messages - Show all messages in the network");
     println!("  config show types  - List all types in the network");
-    // Add more commands as needed
     Ok(())
 }
 

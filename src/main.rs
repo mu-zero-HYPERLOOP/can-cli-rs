@@ -1,6 +1,7 @@
+use clap::Subcommand;
 use commands::{config::{
     select::{command_config_select, command_config_pull},
-    show::{command_config_show, command_config_show_nodes, command_config_show_messages, command_config_show_types},
+    show::{command_config_show, command_config_show_nodes, command_config_show_messages, command_config_show_types, command_config_help},
 }, gen::command_gen};
 
 pub mod commands;
@@ -31,6 +32,10 @@ fn cli() -> clap::Command {
                         .subcommand(
                             clap::Command::new("types")
                                 .about("shows only the types in the network"),
+                        )
+                        .subcommand(
+                            clap::Command::new("help")
+                                .about("display help for config commands"),
                         ),
                 )
                 .subcommand(
@@ -71,6 +76,9 @@ fn main() {
                     Some(("types", _)) => {
                         command_config_show_types()
                     },
+                    Some(("help", _)) => {
+                        command_config_help()
+                    }
                     None => {
                         command_config_show()
                     }
