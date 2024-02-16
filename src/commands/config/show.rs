@@ -20,7 +20,7 @@ pub fn command_config_show() -> Result<()> {
         ConfigLocation::None => println!("No Configuration Set"),
     }
     let network = appdata.load_network_config()?;
-    println!("Network Baudrate: {}", network.baudrate());
+    // println!("Network Baudrate: {}", network.baudrate());
     println!("Network Build Time: {}", network.build_time());
 
     Ok(())

@@ -1,22 +1,33 @@
-use std::{fs, path::PathBuf, cell::RefCell};
+use std::{cell::RefCell, fs, path::PathBuf};
 
-use crate::{errors::{Error, Result}, gitutils::load_github_repo};
+use crate::{
+    errors::{Error, Result},
+    gitutils::load_github_repo,
+};
 use can_config_rs::config::NetworkRef;
 use dirs;
-use git2::{Repository, BranchType};
+use git2::{BranchType, Repository};
 
 #[derive(serde::Deserialize, serde::Serialize, Clone, Debug)]
 pub enum ConfigLocation {
     Local(PathBuf),
-    Github{url : String, path : String, branch : String},
+    Github {
+        url: String,
+        path: String,
+        branch: String,
+    },
     None,
 }
 
 impl ConfigLocation {
-    pub fn to_github_repo(&self) -> Result<Repository>{
+    pub fn to_github_repo(&self) -> Result<Repository> {
         match &self {
             ConfigLocation::Local(_) => return Err(Error::NotAGithubConfig),
-            ConfigLocation::Github{url, path, branch : _} => load_github_repo(url, &get_appdata_remote_dir()),
+            ConfigLocation::Github {
+                url,
+                path,
+                branch: _,
+            } => load_github_repo(url, &get_appdata_remote_dir()),
             ConfigLocation::None => return Err(Error::NoConfigSelected),
         }
     }
@@ -34,34 +45,34 @@ impl AppData {
         self.0.borrow_mut().config_location.clone()
     }
 
-    pub fn set_network_config_location(&self, location : ConfigLocation) -> Result<()>{
-        self.0.borrow_mut().config_location = match location{
+    pub fn set_network_config_location(&self, location: ConfigLocation) -> Result<()> {
+        self.0.borrow_mut().config_location = match location {
             ConfigLocation::Local(local_path) => {
                 if !local_path.exists() {
                     return Err(Error::FileNotFound(local_path));
                 }
                 ConfigLocation::Local(local_path)
-            },
-            ConfigLocation::Github{url, path, branch : branch_name} => {
+            }
+            ConfigLocation::Github {
+                url,
+                path,
+                branch: branch_name,
+            } => {
                 let repo = load_github_repo(&url, &get_appdata_remote_dir())?;
                 let branches = repo.branches(Some(BranchType::Remote))?;
                 let mut is_valid_branch_name = false;
                 for branch in branches {
                     match branch {
-                        Ok((branch,_)) => {
-                            match branch.name() {
-                                Ok(opt_name) => {
-                                    match opt_name {
-                                        Some(name) if name == &format!("origin/{branch_name}")=>  {
-                                            is_valid_branch_name = true;
-                                            break;
-                                        }
-                                        _ => (),
-                                    }
+                        Ok((branch, _)) => match branch.name() {
+                            Ok(opt_name) => match opt_name {
+                                Some(name) if name == &format!("origin/{branch_name}") => {
+                                    is_valid_branch_name = true;
+                                    break;
                                 }
-                                Err(_) => (),
-                            }
-                        }
+                                _ => (),
+                            },
+                            Err(_) => (),
+                        },
                         Err(_) => (),
                     }
                 }
@@ -70,10 +81,20 @@ impl AppData {
                 }
 
                 // ensure that the path is valid!
-                if !repo.path().parent().expect("Repo is in root xD. How???").join(path.clone()).exists() {
+                if !repo
+                    .path()
+                    .parent()
+                    .expect("Repo is in root xD. How???")
+                    .join(path.clone())
+                    .exists()
+                {
                     return Err(Error::InvalidRepo);
                 }
-                ConfigLocation::Github{url, path, branch : branch_name}
+                ConfigLocation::Github {
+                    url,
+                    path,
+                    branch: branch_name,
+                }
             }
             ConfigLocation::None => ConfigLocation::None,
         };
@@ -87,9 +108,16 @@ impl AppData {
                 Ok(config_str) => Ok(can_yaml_config_rs::parse_yaml_config(&config_str)?),
                 Err(_) => return Err(Error::BrokenConfig),
             },
-            ConfigLocation::Github{url, path, branch : _} => {
+            ConfigLocation::Github {
+                url,
+                path,
+                branch: _,
+            } => {
                 let repo = load_github_repo(&url, &get_appdata_remote_dir())?;
-                let repo_path = repo.path().parent().expect("the really shouldnt be stored in root xD");
+                let repo_path = repo
+                    .path()
+                    .parent()
+                    .expect("the really shouldnt be stored in root xD");
                 let config_path = repo_path.join(path);
                 match fs::read_to_string(&config_path) {
                     Ok(config_str) => Ok(can_yaml_config_rs::parse_yaml_config(&config_str)?),

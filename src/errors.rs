@@ -1,5 +1,7 @@
 use std::{path::PathBuf, fmt::Display};
 
+use can_live_config_rs::LiveConfigError;
+
 
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -15,6 +17,20 @@ pub enum Error {
     NotAGithubConfig,
     InvalidRepo,
     InvalidBranch,
+    LiveConfigError(LiveConfigError),
+    CodegenError(can_c_codegen_rs::errors::Error),
+}
+
+impl From<can_c_codegen_rs::errors::Error> for Error {
+    fn from(value: can_c_codegen_rs::errors::Error) -> Self {
+        Error::CodegenError(value)
+    }
+}
+
+impl From<LiveConfigError> for Error {
+    fn from(value: LiveConfigError) -> Self {
+        Error::LiveConfigError(value)
+    }
 }
 
 impl From<can_yaml_config_rs::errors::Error> for Error  {
@@ -42,6 +58,8 @@ impl Display for Error {
             Error::NotAGithubConfig => write!(f, "pull is only applicable if a github network configuration was selected"),
             Error::InvalidRepo => write!(f, "Invalid repo, failed to find canzero.yaml in root"),
             Error::InvalidBranch => write!(f, "Invalid branch"),
+            Error::LiveConfigError(err) => write!(f, "{err:?}"),
+            Error::CodegenError(err) => write!(f, "{err:?}"),
         }
     }
 }
