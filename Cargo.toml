@@ -10,7 +10,8 @@ clap = { version = "4.4.7", features = ["derive"] }
 git2 = { version = "0.18.0" }
 dirs = { version = "5.0.0" }
 can-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-config-rs.git"}
-can-cpp-codegen-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-cpp-codegen-rs.git"}
+can-c-codegen-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git"}
 can-yaml-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-yaml-config-rs.git" }
+can-live-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-live-config-rs.git"}
 serde = {version = "1.0.193", features=["derive"]}
 serde_yaml = "0.9.27"
