@@ -57,6 +57,10 @@ fn cli() -> clap::Command {
                 .short('c')
                 .long("node")
                 .required(true))
+            .arg(clap::Arg::new("output")
+                 .short('o')
+                 .long("output")
+                 .required(true))
             )
 }
 
@@ -99,7 +103,8 @@ fn main() {
         },
         Some(("generate", sub_matches)) => {
             let node_name : &String = sub_matches.get_one("node").unwrap();
-            command_gen(node_name)
+            let output_dir : &String = sub_matches.get_one("output").unwrap();
+            command_gen(node_name, output_dir)
         },
         _ => unreachable!(),
     };
