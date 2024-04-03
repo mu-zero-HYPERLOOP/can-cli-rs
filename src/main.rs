@@ -1,18 +1,24 @@
 use client::command_client;
-use commands::{config::{
-    select::{command_config_select, command_config_pull},
-    show::{command_config_show, command_config_show_nodes, command_config_show_messages, command_config_show_types, command_config_help},
-}, gen::command_gen};
+use commands::{
+    config::{
+        select::{command_config_pull, command_config_select},
+        show::{
+            command_config_help, command_config_show, command_config_show_messages,
+            command_config_show_nodes, command_config_show_types,
+        },
+    },
+    gen::command_gen,
+};
 use scan::command_scan;
 use server::command_server;
 
-pub mod commands;
 pub mod appdata;
-pub mod errors;
-mod server;
 mod client;
-mod scan;
+pub mod commands;
+pub mod errors;
 mod gitutils;
+mod scan;
+mod server;
 
 fn cli() -> clap::Command {
     clap::Command::new("canzero")
@@ -73,8 +79,12 @@ fn cli() -> clap::Command {
             .about("Scans the network for running CANzero communication servers")
         ).subcommand(
             clap::Command::new("client")
+            .about("Searches and connects to a CANzero communication server")
+            .alias("connect")
         ).subcommand(
             clap::Command::new("server")
+            .about("Hosts a CANzero communication server")
+            .alias("host")
         )
 }
 
@@ -83,53 +93,36 @@ async fn main() {
     let matches = cli().get_matches();
     let result = match matches.subcommand() {
         Some(("config", sub_matches)) => match sub_matches.subcommand() {
-            Some(("show", sub_matches)) => 
-            {
-                match sub_matches.subcommand() {
-                    Some(("nodes", _)) => {
-                        command_config_show_nodes()
-                    },
-                    Some(("messages", _)) => {
-                        command_config_show_messages()
-                    },
-                    Some(("types", _)) => {
-                        command_config_show_types()
-                    },
-                    Some(("help", _)) => {
-                        command_config_help()
-                    }
-                    None => {
-                        command_config_show()
-                    }
-                    _ => unreachable!(),
-                }
+            Some(("show", sub_matches)) => match sub_matches.subcommand() {
+                Some(("nodes", _)) => command_config_show_nodes(),
+                Some(("messages", _)) => command_config_show_messages(),
+                Some(("types", _)) => command_config_show_types(),
+                Some(("help", _)) => command_config_help(),
+                None => command_config_show(),
+                _ => unreachable!(),
             },
             Some(("select", sub_matches)) => {
                 let path: &String = sub_matches.get_one("path").unwrap();
                 let file: Option<&String> = sub_matches.get_one("file");
                 let branch: Option<&String> = sub_matches.get_one("branch");
                 command_config_select(path, file, branch)
-            },
-            Some(("pull", _)) => {
-                command_config_pull()
-            },
+            }
+            Some(("pull", _)) => command_config_pull(),
 
             _ => unreachable!(),
         },
         Some(("generate", sub_matches)) => {
-            let node_name : &String = sub_matches.get_one("node").unwrap();
-            let output_dir : &String = sub_matches.get_one("output").unwrap();
-            command_gen(node_name, output_dir)
-        },
-        Some(("scan", _)) => {
-            command_scan()
-        },
-        Some(("client", _)) => {
-            command_client().await
-        },
-        Some(("server", _)) => {
-            command_server().await
-        },
+            let node_name: &String = sub_matches.get_one("node").unwrap();
+            let output_dir: &String = sub_matches.get_one("output").unwrap();
+            let node_name = node_name.to_owned();
+            let output_dir = output_dir.to_owned();
+            tokio::task::spawn_blocking(move || command_gen(&node_name, &output_dir))
+                .await
+                .unwrap()
+        }
+        Some(("scan", _)) => tokio::task::spawn_blocking(command_scan).await.unwrap(),
+        Some(("client", _)) => command_client().await,
+        Some(("server", _)) => command_server().await,
         _ => unreachable!(),
     };
     match result {
