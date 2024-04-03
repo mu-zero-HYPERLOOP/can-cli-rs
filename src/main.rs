@@ -3,10 +3,12 @@ use commands::{config::{
     select::{command_config_select, command_config_pull},
     show::{command_config_show, command_config_show_nodes, command_config_show_messages, command_config_show_types, command_config_help},
 }, gen::command_gen};
+use scan::command_scan;
 
 pub mod commands;
 pub mod appdata;
 pub mod errors;
+mod scan;
 mod gitutils;
 
 fn cli() -> clap::Command {
@@ -62,6 +64,9 @@ fn cli() -> clap::Command {
                  .long("output")
                  .required(true))
             )
+        .subcommand(
+            clap::Command::new("scan")
+        )
 }
 
 fn main() {
@@ -105,6 +110,9 @@ fn main() {
             let node_name : &String = sub_matches.get_one("node").unwrap();
             let output_dir : &String = sub_matches.get_one("output").unwrap();
             command_gen(node_name, output_dir)
+        },
+        Some(("scan", _)) => {
+            command_scan()
         },
         _ => unreachable!(),
     };

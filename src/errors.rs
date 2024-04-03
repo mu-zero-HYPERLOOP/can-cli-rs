@@ -19,6 +19,13 @@ pub enum Error {
     InvalidBranch,
     LiveConfigError(LiveConfigError),
     CodegenError(can_c_codegen_rs::errors::Error),
+    Io(std::io::Error),
+}
+
+impl From<std::io::Error> for Error {
+    fn from(value: std::io::Error) -> Self {
+        Error::Io(value)
+    }
 }
 
 impl From<can_c_codegen_rs::errors::Error> for Error {
@@ -60,6 +67,7 @@ impl Display for Error {
             Error::InvalidBranch => write!(f, "Invalid branch"),
             Error::LiveConfigError(err) => write!(f, "{err:?}"),
             Error::CodegenError(err) => write!(f, "{err:?}"),
+            Error::Io(err) => write!(f, "{err:?}"),
         }
     }
 }
