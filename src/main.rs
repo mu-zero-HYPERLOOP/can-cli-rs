@@ -1,19 +1,22 @@
-use clap::Subcommand;
+use client::command_client;
 use commands::{config::{
     select::{command_config_select, command_config_pull},
     show::{command_config_show, command_config_show_nodes, command_config_show_messages, command_config_show_types, command_config_help},
 }, gen::command_gen};
 use scan::command_scan;
+use server::command_server;
 
 pub mod commands;
 pub mod appdata;
 pub mod errors;
+mod server;
+mod client;
 mod scan;
 mod gitutils;
 
 fn cli() -> clap::Command {
     clap::Command::new("canzero")
-        .about("cli for can utilities for muzero Hyperloop")
+        .about("The command line interface for the CANzero toolchain.\nCANzero is a multi platform communication protocol developed for mu-zero HYPERLOOP.")
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true)
@@ -54,6 +57,7 @@ fn cli() -> clap::Command {
         )
         .subcommand(
             clap::Command::new("generate")
+            .about("Generates platform independent C layer for embeeded devices")
             .alias("gen")
             .arg(clap::Arg::new("node")
                 .short('c')
@@ -66,10 +70,16 @@ fn cli() -> clap::Command {
             )
         .subcommand(
             clap::Command::new("scan")
+            .about("Scans the network for running CANzero communication servers")
+        ).subcommand(
+            clap::Command::new("client")
+        ).subcommand(
+            clap::Command::new("server")
         )
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let matches = cli().get_matches();
     let result = match matches.subcommand() {
         Some(("config", sub_matches)) => match sub_matches.subcommand() {
@@ -113,6 +123,12 @@ fn main() {
         },
         Some(("scan", _)) => {
             command_scan()
+        },
+        Some(("client", _)) => {
+            command_client().await
+        },
+        Some(("server", _)) => {
+            command_server().await
         },
         _ => unreachable!(),
     };
