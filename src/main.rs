@@ -61,6 +61,7 @@ fn cli() -> clap::Command {
         ).subcommand(
             clap::Command::new("ssh")
         )
+        .subcommand(clap::Command::new("run")
         .subcommand(
             clap::Command::new("client")
             .about("Searches and connects to a CANzero communication server")
@@ -69,7 +70,7 @@ fn cli() -> clap::Command {
             clap::Command::new("server")
             .about("Hosts a CANzero communication server")
             .alias("host")
-        )
+        ))
 }
 
 #[tokio::main]
@@ -94,17 +95,18 @@ async fn main() {
                 .await
                 .unwrap()
         }
-        Some(("update", sub_matches)) => {
-            match sub_matches.subcommand() {
-                Some(("server", _)) => command_update_server(),
-                Some(("self", _)) => command_update_self(),
-                _ => unreachable!(),
-            }
-        }
+        Some(("update", sub_matches)) => match sub_matches.subcommand() {
+            Some(("server", _)) => command_update_server(),
+            Some(("self", _)) => command_update_self(),
+            _ => unreachable!(),
+        },
         Some(("ssh", _)) => tokio::task::spawn_blocking(command_ssh).await.unwrap(),
         Some(("scan", _)) => tokio::task::spawn_blocking(command_scan).await.unwrap(),
-        Some(("client", _)) => command_client().await,
-        Some(("server", _)) => command_server().await,
+        Some(("run", sub_matches)) => match sub_matches.subcommand() {
+            Some(("client", _)) => command_client().await,
+            Some(("server", _)) => command_server().await,
+            _ => unreachable!(),
+        },
         _ => unreachable!(),
     };
     match result {
