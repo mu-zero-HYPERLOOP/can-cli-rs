@@ -4,11 +4,13 @@ use clap::ArgAction;
 use client::command_client;
 use config::{command_config_get, command_config_set};
 use generate::command_generate;
+use get::command_get_server_log;
 use scan::command_scan;
 use server::command_server;
 use ssh::{command_scp, command_ssh, command_ssh_reboot};
 use update::{command_update_self, command_update_server};
 
+mod get;
 mod client;
 mod config;
 mod errors;
@@ -76,6 +78,8 @@ fn cli() -> clap::Command {
             .about("Hosts a CANzero communication server")
             .alias("host")
         ))
+        .subcommand(clap::Command::new("get")
+            .subcommand(clap::Command::new("server-log").arg(clap::Arg::new("host").long("host").alias("hostname"))))
 }
 
 #[tokio::main]
@@ -102,7 +106,7 @@ async fn main() {
         }
         Some(("update", sub_matches)) => match sub_matches.subcommand() {
             Some(("server", args)) => {
-                let host : Option<&String> = args.get_one("host");
+                let host: Option<&String> = args.get_one("host");
                 command_update_server(host)
             }
             Some(("self", _)) => command_update_self(),
@@ -110,7 +114,7 @@ async fn main() {
         },
         Some(("ssh", args)) => {
             let reboot: &bool = args.get_one("reboot").unwrap_or(&false);
-            let host : Option<&String> = args.get_one("host");
+            let host: Option<&String> = args.get_one("host");
             let host = host.cloned();
             let upload: Option<&String> = args.get_one("upload");
             if let Some(upload) = upload {
@@ -142,10 +146,19 @@ async fn main() {
                         .await
                         .unwrap()
                 } else {
-                    tokio::task::spawn_blocking(move || command_ssh(host)).await.unwrap()
+                    tokio::task::spawn_blocking(move || command_ssh(host))
+                        .await
+                        .unwrap()
                 }
             }
         }
+        Some(("get", sub_matches)) => match sub_matches.subcommand() {
+            Some(("server-log", args)) => {
+                let host : Option<&String> = args.get_one("host");
+                command_get_server_log(host)
+            },
+            _ => unreachable!(),
+        },
         Some(("scan", args)) => {
             let inf: bool = *args.get_one("loop").unwrap_or(&false);
             tokio::task::spawn_blocking(move || command_scan(inf))
