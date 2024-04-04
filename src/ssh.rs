@@ -125,7 +125,7 @@ pub fn command_scp(path_str : String, host : Option<String>) -> Result<()>  {
         .arg("-i")
         .arg("~/.ssh/mu-zero")
         .arg(path.clone())
-        .arg(&format!("pi@{ip_addr:?}:/home/pi/.canzero/public/{filename}"))
+        .arg(&format!("pi@{ip_addr:?}:/home/pi/.canzero/{filename}"))
         .spawn()
         .unwrap()
         .wait()
