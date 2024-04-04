@@ -6,6 +6,7 @@ use config::{command_config_get, command_config_set};
 use generate::command_generate;
 use scan::command_scan;
 use server::command_server;
+use update::command_update;
 
 mod client;
 mod errors;
@@ -14,6 +15,7 @@ mod generate;
 mod gitutils;
 mod scan;
 mod server;
+mod update;
 
 fn cli() -> clap::Command {
     clap::Command::new("canzero")
@@ -59,7 +61,7 @@ fn cli() -> clap::Command {
             clap::Command::new("server")
             .about("Hosts a CANzero communication server")
             .alias("host")
-        )
+        ).subcommand(clap::Command::new("update"))
 }
 
 #[tokio::main]
@@ -83,7 +85,10 @@ async fn main() {
             tokio::task::spawn_blocking(move || command_generate(&node_name, &output_dir))
                 .await
                 .unwrap()
-        }
+        },
+        Some(("update", _)) => {
+            command_update()
+        },
         Some(("scan", _)) => tokio::task::spawn_blocking(command_scan).await.unwrap(),
         Some(("client", _)) => command_client().await,
         Some(("server", _)) => command_server().await,

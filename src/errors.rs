@@ -20,6 +20,7 @@ pub enum Error {
     CodegenError(can_c_codegen_rs::errors::Error),
     Io(std::io::Error),
     AppDataError(AppDataError),
+    MissingDependency(String),
 }
 
 impl From<AppDataError> for Error {
@@ -69,6 +70,7 @@ impl Display for Error {
             Error::CodegenError(err) => write!(f, "{err:?}"),
             Error::Io(err) => write!(f, "{err:?}"),
             Error::AppDataError(err) => write!(f, "{err:?}"),
+            Error::MissingDependency(dep) => write!(f, "Missing dependency {dep}"),
         }
     }
 }
