@@ -88,12 +88,23 @@ $ rustup target add {PI_ARCH}"
     canzero_cli_bin_path.push("release");
     canzero_cli_bin_path.push(CANZERO_CLI_BIN_NAME);
 
+
+    std::process::Command::new("ssh")
+        .arg("-i")
+        .arg("~/.ssh/mu-zero")
+        .arg(format!("pi@{ip_addr:?}"))
+        .arg("mkdir -p ~/.canzero")
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
+
     std::process::Command::new("scp")
         .arg("-i")
         .arg("~/.ssh/mu-zero")
         .arg(config_path)
         .arg(&format!(
-            "pi@{ip_addr:?}:/home/pi/canzero_network_config.yaml"
+            "pi@{ip_addr:?}:/home/pi/.canzero/canzero_network_config.yaml"
         ))
         .spawn()
         .unwrap()
@@ -104,7 +115,7 @@ $ rustup target add {PI_ARCH}"
         .arg("-i")
         .arg("~/.ssh/mu-zero")
         .arg(format!("pi@{ip_addr:?}"))
-        .arg("rm /home/pi/canzero")
+        .arg("rm /home/pi/.canzero/canzero")
         .spawn()
         .unwrap()
         .wait()
@@ -114,7 +125,19 @@ $ rustup target add {PI_ARCH}"
         .arg("-i")
         .arg("~/.ssh/mu-zero")
         .arg(canzero_cli_bin_path)
-        .arg(&format!("pi@{ip_addr:?}:/home/pi/canzero"))
+        .arg(&format!("pi@{ip_addr:?}:/home/pi/.canzero"))
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
+
+    std::process::Command::new("ssh")
+        .arg("-i")
+        .arg("~/.ssh/mu-zero")
+        .arg(format!("pi@{ip_addr:?}"))
+        .arg("~/.canzero/canzero")
+        .arg("set-path")
+        .arg("~/.canzero/canzero-network-config.yaml")
         .spawn()
         .unwrap()
         .wait()
