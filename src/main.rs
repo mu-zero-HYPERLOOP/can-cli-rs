@@ -6,6 +6,7 @@ use config::{command_config_get, command_config_set};
 use generate::command_generate;
 use scan::command_scan;
 use server::command_server;
+use ssh::command_ssh;
 use update::command_update;
 
 mod client;
@@ -16,6 +17,7 @@ mod gitutils;
 mod scan;
 mod server;
 mod update;
+mod ssh;
 
 fn cli() -> clap::Command {
     clap::Command::new("canzero")
@@ -33,7 +35,7 @@ fn cli() -> clap::Command {
                 .subcommand(
                     clap::Command::new("set-path")
                         .about("sets the path to the CANzero network configuration file")
-                        .arg(clap::Arg::new("path").index(0).required(true))
+                        .arg(clap::Arg::new("path").index(1).required(true))
 
                 ),
         )
@@ -54,6 +56,11 @@ fn cli() -> clap::Command {
             clap::Command::new("scan")
             .about("Scans the network for running CANzero communication servers")
         ).subcommand(
+            clap::Command::new("update")
+        ).subcommand(
+            clap::Command::new("ssh")
+        )
+        .subcommand(
             clap::Command::new("client")
             .about("Searches and connects to a CANzero communication server")
             .alias("connect")
@@ -61,7 +68,7 @@ fn cli() -> clap::Command {
             clap::Command::new("server")
             .about("Hosts a CANzero communication server")
             .alias("host")
-        ).subcommand(clap::Command::new("update"))
+        )
 }
 
 #[tokio::main]
@@ -88,6 +95,9 @@ async fn main() {
         },
         Some(("update", _)) => {
             command_update()
+        },
+        Some(("ssh", _)) => {
+            tokio::task::spawn_blocking(command_ssh).await.unwrap()
         },
         Some(("scan", _)) => tokio::task::spawn_blocking(command_scan).await.unwrap(),
         Some(("client", _)) => command_client().await,

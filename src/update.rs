@@ -8,6 +8,7 @@ const CANZERO_CLI_REPO: &'static str = "https://github.com/mu-zero-HYPERLOOP/can
 const CANZERO_CLI_PATH: &'static str = "canzero-cli";
 
 const PI_ARCH : &'static str = "armv7-unknown-linux-gnueabihf";
+const CANZERO_CLI_BIN_NAME : &'static str = "canzero";
 
 pub fn command_update() -> Result<()> {
     let Ok(rustup_target_list) = std::process::Command::new("rustup")
@@ -64,7 +65,7 @@ $ rustup target add {PI_ARCH}"
     }
 
     println!("Cross-Compiling {CANZERO_CLI_REPO}");
-    let x = std::process::Command::new("cross")
+    std::process::Command::new("cross")
         .arg("build")
         .arg("--release")
         .arg(&format!("--target={PI_ARCH}"))
@@ -73,6 +74,17 @@ $ rustup target add {PI_ARCH}"
         .unwrap()
         .wait()
         .unwrap();
+
+    let mut canzero_cli_bin_path = canzero_cli_path.clone();
+    canzero_cli_bin_path.push("target");
+    canzero_cli_bin_path.push(PI_ARCH);
+    canzero_cli_bin_path.push("release");
+    canzero_cli_bin_path.push(CANZERO_CLI_BIN_NAME);
+
+    println!("{canzero_cli_bin_path:?}");
+
+
+
 
     Ok(())
 }

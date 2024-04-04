@@ -21,6 +21,7 @@ pub enum Error {
     Io(std::io::Error),
     AppDataError(AppDataError),
     MissingDependency(String),
+    InvalidResponse,
 }
 
 impl From<AppDataError> for Error {
@@ -71,6 +72,7 @@ impl Display for Error {
             Error::Io(err) => write!(f, "{err:?}"),
             Error::AppDataError(err) => write!(f, "{err:?}"),
             Error::MissingDependency(dep) => write!(f, "Missing dependency {dep}"),
+            Error::InvalidResponse => write!(f, "Invalid Response"),
         }
     }
 }
