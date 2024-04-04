@@ -10,11 +10,11 @@ use server::command_server;
 use ssh::{command_scp, command_ssh, command_ssh_reboot};
 use update::{command_update_self, command_update_server};
 
-mod get;
 mod client;
 mod config;
 mod errors;
 mod generate;
+mod get;
 mod gitutils;
 mod scan;
 mod server;
@@ -60,12 +60,17 @@ fn cli() -> clap::Command {
             .arg(clap::Arg::new("loop").long("loop").short('l').required(false).action(ArgAction::SetTrue))
         ).subcommand(
             clap::Command::new("update")
-            .subcommand(clap::Command::new("server").arg(clap::Arg::new("host").long("host").required(false)))
+            .subcommand(clap::Command::new("server")
+                    .arg(clap::Arg::new("host").long("host").required(false))
+                    .arg(clap::Arg::new("reboot").long("reboot").required(false).action(ArgAction::SetTrue))
+                    .arg(clap::Arg::new("restart").long("restart").short('r').required(false).action(ArgAction::SetTrue))
+            )
             .subcommand(clap::Command::new("self"))
         ).subcommand(
             clap::Command::new("ssh")
             .arg(clap::Arg::new("host").long("host").alias("hostname").required(false))
-            .arg(clap::Arg::new("reboot").long("reboot").short('r').alias("restart").required(false).action(ArgAction::SetTrue))
+            .arg(clap::Arg::new("reboot").long("reboot").required(false).action(ArgAction::SetTrue))
+            .arg(clap::Arg::new("restart").long("restart").short('r').required(false).action(ArgAction::SetTrue))
             .arg(clap::Arg::new("upload").long("upload").short('u').required(false))
         )
         .subcommand(clap::Command::new("run")
@@ -107,7 +112,10 @@ async fn main() {
         Some(("update", sub_matches)) => match sub_matches.subcommand() {
             Some(("server", args)) => {
                 let host: Option<&String> = args.get_one("host");
-                command_update_server(host)
+                let reboot: bool = *args.get_one("reboot").unwrap_or(&false);
+                let restart: bool = *args.get_one("restart").unwrap_or(&false);
+                command_update_server(host, reboot, restart).unwrap();
+                Ok(())
             }
             Some(("self", _)) => command_update_self(),
             _ => unreachable!(),
@@ -154,9 +162,9 @@ async fn main() {
         }
         Some(("get", sub_matches)) => match sub_matches.subcommand() {
             Some(("server-log", args)) => {
-                let host : Option<&String> = args.get_one("host");
+                let host: Option<&String> = args.get_one("host");
                 command_get_server_log(host)
-            },
+            }
             _ => unreachable!(),
         },
         Some(("scan", args)) => {

@@ -1,4 +1,4 @@
-use std::{net::IpAddr, str::FromStr};
+use std::{net::IpAddr, os::unix::process::CommandExt, str::FromStr};
 
 use can_appdata::AppData;
 
@@ -13,7 +13,7 @@ const CANZERO_CLI_PATH: &'static str = "canzero-cli";
 const PI_ARCH: &'static str = "armv7-unknown-linux-gnueabihf";
 const CANZERO_CLI_BIN_NAME: &'static str = "canzero";
 
-pub fn command_update_server(host: Option<&String>) -> Result<()> {
+pub fn command_update_server(host: Option<&String>, reboot: bool, restart : bool) -> Result<()> {
     let appdata = AppData::read()?;
     let Some(config_path) = appdata.get_config_path() else {
         return Err(Error::NoConfigSelected);
@@ -149,6 +149,27 @@ $ rustup target add {PI_ARCH}"
         .unwrap()
         .wait()
         .unwrap();
+
+    if reboot {
+        std::process::Command::new("ssh") 
+            .arg("-i")
+            .arg("~/.ssh/mu-zero")
+            .arg(format!("pi@{ip_addr:?}"))
+            .arg("sudo")
+            .arg("reboot")
+            .exec();
+    }else if restart {
+        std::process::Command::new("ssh") 
+            .arg("-i")
+            .arg("~/.ssh/mu-zero")
+            .arg(format!("pi@{ip_addr:?}"))
+            .arg("sudo")
+            .arg("pkill")
+            .arg("canzero")
+            .arg("&&")
+            .arg("/home/pi/.canzero/canzero run server")
+            .exec();
+    }
 
     Ok(())
 }
