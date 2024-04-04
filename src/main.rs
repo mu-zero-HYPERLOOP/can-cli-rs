@@ -58,7 +58,7 @@ fn cli() -> clap::Command {
             .arg(clap::Arg::new("loop").long("loop").short('l').required(false).action(ArgAction::SetTrue))
         ).subcommand(
             clap::Command::new("update")
-            .subcommand(clap::Command::new("server"))
+            .subcommand(clap::Command::new("server").arg(clap::Arg::new("host").long("host").required(false)))
             .subcommand(clap::Command::new("self"))
         ).subcommand(
             clap::Command::new("ssh")
@@ -101,7 +101,10 @@ async fn main() {
                 .unwrap()
         }
         Some(("update", sub_matches)) => match sub_matches.subcommand() {
-            Some(("server", _)) => command_update_server(),
+            Some(("server", args)) => {
+                let host : Option<&String> = args.get_one("host");
+                command_update_server(host)
+            }
             Some(("self", _)) => command_update_self(),
             _ => unreachable!(),
         },

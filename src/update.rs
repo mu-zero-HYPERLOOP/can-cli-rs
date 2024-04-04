@@ -1,3 +1,5 @@
+use std::{net::IpAddr, str::FromStr};
+
 use can_appdata::AppData;
 
 use crate::{
@@ -11,14 +13,19 @@ const CANZERO_CLI_PATH: &'static str = "canzero-cli";
 const PI_ARCH: &'static str = "armv7-unknown-linux-gnueabihf";
 const CANZERO_CLI_BIN_NAME: &'static str = "canzero";
 
-pub fn command_update_server() -> Result<()> {
+pub fn command_update_server(host: Option<&String>) -> Result<()> {
     let appdata = AppData::read()?;
     let Some(config_path) = appdata.get_config_path() else {
         return Err(Error::NoConfigSelected);
     };
 
-    let Some(ip_addr) = scan_ssh()? else {
-        return Ok(());
+    let ip_addr = if let Some(host) = host {
+        IpAddr::from_str(host).expect("Not a ip address!")
+    } else {
+        let Some(ip_addr) = scan_ssh()? else {
+            return Ok(());
+        };
+        ip_addr
     };
 
     let Ok(rustup_target_list) = std::process::Command::new("rustup")
@@ -88,7 +95,6 @@ $ rustup target add {PI_ARCH}"
     canzero_cli_bin_path.push("release");
     canzero_cli_bin_path.push(CANZERO_CLI_BIN_NAME);
 
-
     std::process::Command::new("ssh")
         .arg("-i")
         .arg("~/.ssh/mu-zero")
@@ -104,7 +110,7 @@ $ rustup target add {PI_ARCH}"
         .arg("~/.ssh/mu-zero")
         .arg(config_path)
         .arg(&format!(
-            "pi@{ip_addr:?}:/home/pi/.canzero/canzero_network_config.yaml"
+            "pi@{ip_addr:?}:/home/pi/.canzero/canzero-network-config.yaml"
         ))
         .spawn()
         .unwrap()
@@ -135,9 +141,10 @@ $ rustup target add {PI_ARCH}"
         .arg("-i")
         .arg("~/.ssh/mu-zero")
         .arg(format!("pi@{ip_addr:?}"))
-        .arg("~/.canzero/canzero")
+        .arg("sudo /home/pi/.canzero/canzero")
+        .arg("config")
         .arg("set-path")
-        .arg("~/.canzero/canzero-network-config.yaml")
+        .arg("/home/pi/.canzero/canzero-network-config.yaml")
         .spawn()
         .unwrap()
         .wait()
