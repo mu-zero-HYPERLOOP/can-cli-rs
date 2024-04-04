@@ -1,4 +1,3 @@
-
 use std::{path::PathBuf, str::FromStr};
 
 use client::command_client;
@@ -7,17 +6,17 @@ use generate::command_generate;
 use scan::command_scan;
 use server::command_server;
 use ssh::command_ssh;
-use update::command_update;
+use update::{command_update_self, command_update_server};
 
 mod client;
-mod errors;
 mod config;
+mod errors;
 mod generate;
 mod gitutils;
 mod scan;
 mod server;
-mod update;
 mod ssh;
+mod update;
 
 fn cli() -> clap::Command {
     clap::Command::new("canzero")
@@ -57,6 +56,8 @@ fn cli() -> clap::Command {
             .about("Scans the network for running CANzero communication servers")
         ).subcommand(
             clap::Command::new("update")
+            .subcommand(clap::Command::new("server"))
+            .subcommand(clap::Command::new("self"))
         ).subcommand(
             clap::Command::new("ssh")
         )
@@ -92,13 +93,15 @@ async fn main() {
             tokio::task::spawn_blocking(move || command_generate(&node_name, &output_dir))
                 .await
                 .unwrap()
-        },
-        Some(("update", _)) => {
-            command_update()
-        },
-        Some(("ssh", _)) => {
-            tokio::task::spawn_blocking(command_ssh).await.unwrap()
-        },
+        }
+        Some(("update", sub_matches)) => {
+            match sub_matches.subcommand() {
+                Some(("server", _)) => command_update_server(),
+                Some(("self", _)) => command_update_self(),
+                _ => unreachable!(),
+            }
+        }
+        Some(("ssh", _)) => tokio::task::spawn_blocking(command_ssh).await.unwrap(),
         Some(("scan", _)) => tokio::task::spawn_blocking(command_scan).await.unwrap(),
         Some(("client", _)) => command_client().await,
         Some(("server", _)) => command_server().await,

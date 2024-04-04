@@ -1,16 +1,26 @@
-use std::{os::unix::process::CommandExt, path::PathBuf};
+use can_appdata::AppData;
 
-use can_appdata::{AppData, AppDataError};
-
-use crate::errors::{Error, Result};
+use crate::{
+    errors::{Error, Result},
+    ssh::scan_ssh,
+};
 
 const CANZERO_CLI_REPO: &'static str = "https://github.com/mu-zero-HYPERLOOP/can-cli-rs.git";
 const CANZERO_CLI_PATH: &'static str = "canzero-cli";
 
-const PI_ARCH : &'static str = "armv7-unknown-linux-gnueabihf";
-const CANZERO_CLI_BIN_NAME : &'static str = "canzero";
+const PI_ARCH: &'static str = "armv7-unknown-linux-gnueabihf";
+const CANZERO_CLI_BIN_NAME: &'static str = "canzero";
 
-pub fn command_update() -> Result<()> {
+pub fn command_update_server() -> Result<()> {
+    let appdata = AppData::read()?;
+    let Some(config_path) = appdata.get_config_path() else {
+        return Err(Error::NoConfigSelected);
+    };
+
+    let Some(ip_addr) = scan_ssh()? else {
+        return Ok(());
+    };
+
     let Ok(rustup_target_list) = std::process::Command::new("rustup")
         .arg("target")
         .arg("list")
@@ -20,10 +30,7 @@ pub fn command_update() -> Result<()> {
         return Err(Error::MissingDependency("rustup".to_owned()));
     };
     let list = std::str::from_utf8(&rustup_target_list.stdout).unwrap();
-    if !list
-        .split('\n')
-        .any(|t| t == PI_ARCH)
-    {
+    if !list.split('\n').any(|t| t == PI_ARCH) {
         println!(
             "Missing rust target {PI_ARCH}. 
 Required for crosscompilation to raspberry pies!
@@ -54,7 +61,7 @@ $ rustup target add {PI_ARCH}"
             .wait()
             .unwrap();
     } else {
-        let git_clone_res = std::process::Command::new("git")
+        std::process::Command::new("git")
             .arg("clone")
             .arg(CANZERO_CLI_REPO)
             .arg(&canzero_cli_path)
@@ -81,10 +88,50 @@ $ rustup target add {PI_ARCH}"
     canzero_cli_bin_path.push("release");
     canzero_cli_bin_path.push(CANZERO_CLI_BIN_NAME);
 
-    println!("{canzero_cli_bin_path:?}");
+    std::process::Command::new("scp")
+        .arg("-i")
+        .arg("~/.ssh/mu-zero")
+        .arg(config_path)
+        .arg(&format!(
+            "pi@{ip_addr:?}:/home/pi/canzero_network_config.yaml"
+        ))
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
 
+    std::process::Command::new("ssh")
+        .arg("-i")
+        .arg("~/.ssh/mu-zero")
+        .arg(format!("pi@{ip_addr:?}"))
+        .arg("rm /home/pi/canzero")
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
 
+    std::process::Command::new("scp")
+        .arg("-i")
+        .arg("~/.ssh/mu-zero")
+        .arg(canzero_cli_bin_path)
+        .arg(&format!("pi@{ip_addr:?}:/home/pi/canzero"))
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
 
+    Ok(())
+}
+
+pub fn command_update_self() -> Result<()> {
+    std::process::Command::new("cargo")
+        .arg("install")
+        .arg("--git")
+        .arg("https://github.com/mu-zero-HYPERLOOP/can-cli-rs")
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
 
     Ok(())
 }

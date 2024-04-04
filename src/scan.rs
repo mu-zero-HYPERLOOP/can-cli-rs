@@ -1,4 +1,4 @@
-use std::{fmt::write, net::IpAddr, time::Duration};
+use std::{net::IpAddr, time::Duration};
 
 use crate::errors::Result;
 

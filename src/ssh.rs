@@ -1,4 +1,4 @@
-use std::{net::IpAddr, time::Duration};
+use std::{net::IpAddr, os::unix::process::CommandExt, time::Duration};
 
 use serde_yaml::from_str;
 
@@ -7,8 +7,9 @@ use crate::errors::{Error, Result};
 const BROADCAST_PORT: u16 = 9002u16;
 const SERVICE_NAME: &'static str = "CANzero";
 
-pub fn scan_ssh() -> Result<Option<(IpAddr, u16)>> {
+pub fn scan_ssh() -> Result<Option<IpAddr>> {
     loop {
+        println!("Scanning the network...");
         let socket = std::net::UdpSocket::bind("0.0.0.0:0")?;
         socket.set_broadcast(true)?;
         let broadcast_addr = format!("255.255.255.255:{BROADCAST_PORT}");
@@ -39,30 +40,40 @@ pub fn scan_ssh() -> Result<Option<(IpAddr, u16)>> {
             return Ok(None);
         }
         println!("Found TCP servers at:");
-        for (i, (ip_addr, port)) in connections.iter().enumerate() {
-            println!("-{} : {ip_addr}:{port}", i + 1);
+        for (i, (ip_addr, _)) in connections.iter().enumerate() {
+            println!("-{} : {ip_addr}", i + 1);
         }
         println!(
             "Select server {:?} or 'r' to rescan",
-            (1..=connections.len())
+            (1..connections.len())
         );
         let mut resp = String::new();
         std::io::stdin().read_line(&mut resp).unwrap();
-        if resp == "r" {
+        if resp.starts_with("r") {
             continue;
         }else {
             let Ok(con_index) = from_str::<usize>(&resp) else {
                 return Err(Error::InvalidResponse);
             };
-            return Ok(Some(connections.get(con_index).unwrap().clone()));
+            let Some(con) = connections.get(con_index.saturating_sub(1)) else {
+                return Err(Error::InvalidResponse);
+            };
+            return Ok(Some(con.0.clone()));
         }
     }
 }
 
 pub fn command_ssh() -> Result<()> {
-    let Some((ip_addr, port)) = scan_ssh()? else {
+    let Some(ip_addr) = scan_ssh()? else {
         return Ok(());
     };
+
+    std::process::Command::new("ssh")
+        .arg("-i")
+        .arg("~/.ssh/mu-zero")
+        .arg(format!("pi@{ip_addr:?}"))
+        .exec();
+
     println!("Connecting to {ip_addr}");
     Ok(())
 }
