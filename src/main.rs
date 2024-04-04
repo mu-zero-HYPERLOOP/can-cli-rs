@@ -62,6 +62,7 @@ fn cli() -> clap::Command {
             .subcommand(clap::Command::new("self"))
         ).subcommand(
             clap::Command::new("ssh")
+            .arg(clap::Arg::new("host").long("host").alias("hostname").required(false))
             .arg(clap::Arg::new("reboot").long("reboot").short('r').alias("restart").required(false).action(ArgAction::SetTrue))
             .arg(clap::Arg::new("upload").long("upload").short('u').required(false))
         )
@@ -106,20 +107,25 @@ async fn main() {
         },
         Some(("ssh", args)) => {
             let reboot: &bool = args.get_one("reboot").unwrap_or(&false);
+            let host : Option<&String> = args.get_one("host");
+            let host = host.cloned();
             let upload: Option<&String> = args.get_one("upload");
             if let Some(upload) = upload {
-                let upload = upload.clone();
-                if let Err(err) = tokio::task::spawn_blocking(command_ssh_reboot)
+                let upload1 = upload.clone();
+                let host1 = host.clone();
+                let upload2 = upload.clone();
+                let host2 = host.clone();
+                if let Err(err) = tokio::task::spawn_blocking(move || command_scp(upload1, host1))
                     .await
                     .unwrap()
                 {
                     Err(err)
                 } else {
-                    if let Err(err) = command_scp(upload) {
+                    if let Err(err) = command_scp(upload2, host2) {
                         Err(err)
                     } else {
                         if *reboot {
-                            tokio::task::spawn_blocking(command_ssh_reboot)
+                            tokio::task::spawn_blocking(move || command_ssh_reboot(host))
                                 .await
                                 .unwrap()
                         } else {
@@ -129,11 +135,11 @@ async fn main() {
                 }
             } else {
                 if *reboot {
-                    tokio::task::spawn_blocking(command_ssh_reboot)
+                    tokio::task::spawn_blocking(move || command_ssh_reboot(host))
                         .await
                         .unwrap()
                 } else {
-                    tokio::task::spawn_blocking(command_ssh).await.unwrap()
+                    tokio::task::spawn_blocking(move || command_ssh(host)).await.unwrap()
                 }
             }
         }

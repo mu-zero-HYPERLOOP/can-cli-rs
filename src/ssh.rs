@@ -63,9 +63,14 @@ pub fn scan_ssh() -> Result<Option<IpAddr>> {
     }
 }
 
-pub fn command_ssh() -> Result<()> {
-    let Some(ip_addr) = scan_ssh()? else {
-        return Ok(());
+pub fn command_ssh(host : Option<String> ) -> Result<()> {
+    let ip_addr = if let Some(host) = host {
+        IpAddr::from_str(&host).expect("Not a ip address!")
+    }else {
+        let Some(ip_addr) = scan_ssh()? else {
+            return Ok(());
+        };
+        ip_addr
     };
 
     std::process::Command::new("ssh")
@@ -77,10 +82,16 @@ pub fn command_ssh() -> Result<()> {
     Ok(())
 }
 
-pub fn command_ssh_reboot() -> Result<()> {
-    let Some(ip_addr) = scan_ssh()? else {
-        return Ok(());
+pub fn command_ssh_reboot(host : Option<String>) -> Result<()> {
+    let ip_addr = if let Some(host) = host {
+        IpAddr::from_str(&host).expect("Not a ip address!")
+    }else {
+        let Some(ip_addr) = scan_ssh()? else {
+            return Ok(());
+        };
+        ip_addr
     };
+
 
     std::process::Command::new("ssh")
         .arg("-i")
@@ -93,10 +104,15 @@ pub fn command_ssh_reboot() -> Result<()> {
     Ok(())
 }
 
-pub fn command_scp(path_str : String) -> Result<()>  {
+pub fn command_scp(path_str : String, host : Option<String>) -> Result<()>  {
 
-    let Some(ip_addr) = scan_ssh()? else {
-        return Ok(());
+    let ip_addr = if let Some(host) = host {
+        IpAddr::from_str(&host).expect("Not a ip address!")
+    }else {
+        let Some(ip_addr) = scan_ssh()? else {
+            return Ok(());
+        };
+        ip_addr
     };
  
     let path = PathBuf::from_str(&path_str).expect("FUCK YOU for using non utf8 filenames");
