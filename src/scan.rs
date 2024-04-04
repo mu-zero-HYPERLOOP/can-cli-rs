@@ -45,3 +45,4 @@ pub fn command_scan(inf: bool) -> Result<()> {
     }
     Ok(())
 }
+

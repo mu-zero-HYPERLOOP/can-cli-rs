@@ -1,4 +1,4 @@
-use std::{env::args, net::IpAddr, os::unix::process::CommandExt, time::Duration};
+use std::{env::args, net::IpAddr, os::unix::process::CommandExt, path::PathBuf, str::FromStr, time::Duration};
 
 use serde_yaml::from_str;
 
@@ -89,6 +89,32 @@ pub fn command_ssh_reboot() -> Result<()> {
         .arg("sudo")
         .arg("reboot")
         .exec();
+
+    Ok(())
+}
+
+pub fn command_scp(path_str : String) -> Result<()>  {
+
+    let Some(ip_addr) = scan_ssh()? else {
+        return Ok(());
+    };
+ 
+    let path = PathBuf::from_str(&path_str).expect("FUCK YOU for using non utf8 filenames");
+    if !path.exists() {
+        return Err(Error::FileNotFound(path_str));
+    }
+    let filename = path.file_name().unwrap().to_str().unwrap();
+
+    std::process::Command::new("scp")
+        .arg("-i")
+        .arg("~/.ssh/mu-zero")
+        .arg(path.clone())
+        .arg(&format!("pi@{ip_addr:?}:/home/pi/.canzero/public/{filename}"))
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
+    
 
     Ok(())
 }

@@ -6,7 +6,7 @@ use config::{command_config_get, command_config_set};
 use generate::command_generate;
 use scan::command_scan;
 use server::command_server;
-use ssh::{command_ssh, command_ssh_reboot};
+use ssh::{command_scp, command_ssh, command_ssh_reboot};
 use update::{command_update_self, command_update_server};
 
 mod client;
@@ -63,6 +63,7 @@ fn cli() -> clap::Command {
         ).subcommand(
             clap::Command::new("ssh")
             .arg(clap::Arg::new("reboot").long("reboot").short('r').alias("restart").required(false).action(ArgAction::SetTrue))
+            .arg(clap::Arg::new("upload").long("upload").short('u').required(false))
         )
         .subcommand(clap::Command::new("run")
         .subcommand(
@@ -105,12 +106,35 @@ async fn main() {
         },
         Some(("ssh", args)) => {
             let reboot: &bool = args.get_one("reboot").unwrap_or(&false);
-            if *reboot {
-                tokio::task::spawn_blocking(command_ssh_reboot)
+            let upload: Option<&String> = args.get_one("upload");
+            if let Some(upload) = upload {
+                let upload = upload.clone();
+                if let Err(err) = tokio::task::spawn_blocking(command_ssh_reboot)
                     .await
                     .unwrap()
+                {
+                    Err(err)
+                } else {
+                    if let Err(err) = command_scp(upload) {
+                        Err(err)
+                    } else {
+                        if *reboot {
+                            tokio::task::spawn_blocking(command_ssh_reboot)
+                                .await
+                                .unwrap()
+                        } else {
+                            Ok(())
+                        }
+                    }
+                }
             } else {
-                tokio::task::spawn_blocking(command_ssh).await.unwrap()
+                if *reboot {
+                    tokio::task::spawn_blocking(command_ssh_reboot)
+                        .await
+                        .unwrap()
+                } else {
+                    tokio::task::spawn_blocking(command_ssh).await.unwrap()
+                }
             }
         }
         Some(("scan", args)) => {
