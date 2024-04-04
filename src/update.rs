@@ -167,7 +167,7 @@ $ rustup target add {PI_ARCH}"
             .arg("pkill")
             .arg("canzero")
             .arg("&&")
-            .arg("/home/pi/.canzero/canzero run server")
+            .arg("sudo /home/pi/.canzero/canzero run server")
             .exec();
     }
 
