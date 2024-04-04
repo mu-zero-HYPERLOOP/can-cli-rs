@@ -1,6 +1,6 @@
 use std::{path::PathBuf, fmt::Display};
 
-use can_live_config_rs::LiveConfigError;
+use can_appdata::AppDataError;
 
 
 
@@ -13,13 +13,19 @@ pub enum Error {
     NoConfigSelected,
     YamlConfigError(can_yaml_config_rs::errors::Error),
     GithubError(git2::Error),
-    FileNotFound(PathBuf),
+    FileNotFound(String),
     NotAGithubConfig,
     InvalidRepo,
     InvalidBranch,
-    LiveConfigError(LiveConfigError),
     CodegenError(can_c_codegen_rs::errors::Error),
     Io(std::io::Error),
+    AppDataError(AppDataError),
+}
+
+impl From<AppDataError> for Error {
+    fn from(value: AppDataError) -> Self {
+        Error::AppDataError(value)
+    }
 }
 
 impl From<std::io::Error> for Error {
@@ -34,11 +40,6 @@ impl From<can_c_codegen_rs::errors::Error> for Error {
     }
 }
 
-impl From<LiveConfigError> for Error {
-    fn from(value: LiveConfigError) -> Self {
-        Error::LiveConfigError(value)
-    }
-}
 
 impl From<can_yaml_config_rs::errors::Error> for Error  {
     fn from(value: can_yaml_config_rs::errors::Error) -> Self {
@@ -65,9 +66,9 @@ impl Display for Error {
             Error::NotAGithubConfig => write!(f, "pull is only applicable if a github network configuration was selected"),
             Error::InvalidRepo => write!(f, "Invalid repo, failed to find canzero.yaml in root"),
             Error::InvalidBranch => write!(f, "Invalid branch"),
-            Error::LiveConfigError(err) => write!(f, "{err:?}"),
             Error::CodegenError(err) => write!(f, "{err:?}"),
             Error::Io(err) => write!(f, "{err:?}"),
+            Error::AppDataError(err) => write!(f, "{err:?}"),
         }
     }
 }

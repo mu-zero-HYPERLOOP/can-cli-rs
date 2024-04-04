@@ -12,8 +12,8 @@ dirs = { version = "5.0.0" }
 can-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-config-rs.git"}
 can-c-codegen-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git"}
 can-yaml-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-yaml-config-rs.git" }
-can-live-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-live-config-rs.git"}
 can-tcp-bridge-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-tcp-bridge-rs.git" }
+can-appdata = { git = "https://github.com/mu-zero-HYPERLOOP/can-appdata.git" }
 serde = {version = "1.0.193", features=["derive"]}
 serde_yaml = "0.9.27"
 tokio = { version = "1.37.0", features = ["full"] }
