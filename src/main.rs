@@ -1,11 +1,12 @@
 use std::{path::PathBuf, str::FromStr};
 
+use clap::ArgAction;
 use client::command_client;
 use config::{command_config_get, command_config_set};
 use generate::command_generate;
 use scan::command_scan;
 use server::command_server;
-use ssh::command_ssh;
+use ssh::{command_ssh, command_ssh_reboot};
 use update::{command_update_self, command_update_server};
 
 mod client;
@@ -54,12 +55,14 @@ fn cli() -> clap::Command {
         .subcommand(
             clap::Command::new("scan")
             .about("Scans the network for running CANzero communication servers")
+            .arg(clap::Arg::new("loop").long("loop").short('l').required(false).action(ArgAction::SetTrue))
         ).subcommand(
             clap::Command::new("update")
             .subcommand(clap::Command::new("server"))
             .subcommand(clap::Command::new("self"))
         ).subcommand(
             clap::Command::new("ssh")
+            .arg(clap::Arg::new("reboot").long("reboot").short('r').alias("restart").required(false).action(ArgAction::SetTrue))
         )
         .subcommand(clap::Command::new("run")
         .subcommand(
@@ -100,8 +103,22 @@ async fn main() {
             Some(("self", _)) => command_update_self(),
             _ => unreachable!(),
         },
-        Some(("ssh", _)) => tokio::task::spawn_blocking(command_ssh).await.unwrap(),
-        Some(("scan", _)) => tokio::task::spawn_blocking(command_scan).await.unwrap(),
+        Some(("ssh", args)) => {
+            let reboot: &bool = args.get_one("reboot").unwrap_or(&false);
+            if *reboot {
+                tokio::task::spawn_blocking(command_ssh_reboot)
+                    .await
+                    .unwrap()
+            } else {
+                tokio::task::spawn_blocking(command_ssh).await.unwrap()
+            }
+        }
+        Some(("scan", args)) => {
+            let inf: bool = *args.get_one("loop").unwrap_or(&false);
+            tokio::task::spawn_blocking(move || command_scan(inf))
+                .await
+                .unwrap()
+        }
         Some(("run", sub_matches)) => match sub_matches.subcommand() {
             Some(("client", _)) => command_client().await,
             Some(("server", _)) => command_server().await,

@@ -1,4 +1,4 @@
-use std::{net::IpAddr, os::unix::process::CommandExt, time::Duration};
+use std::{env::args, net::IpAddr, os::unix::process::CommandExt, time::Duration};
 
 use serde_yaml::from_str;
 
@@ -51,7 +51,7 @@ pub fn scan_ssh() -> Result<Option<IpAddr>> {
         std::io::stdin().read_line(&mut resp).unwrap();
         if resp.starts_with("r") {
             continue;
-        }else {
+        } else {
             let Ok(con_index) = from_str::<usize>(&resp) else {
                 return Err(Error::InvalidResponse);
             };
@@ -74,6 +74,21 @@ pub fn command_ssh() -> Result<()> {
         .arg(format!("pi@{ip_addr:?}"))
         .exec();
 
-    println!("Connecting to {ip_addr}");
+    Ok(())
+}
+
+pub fn command_ssh_reboot() -> Result<()> {
+    let Some(ip_addr) = scan_ssh()? else {
+        return Ok(());
+    };
+
+    std::process::Command::new("ssh")
+        .arg("-i")
+        .arg("~/.ssh/mu-zero")
+        .arg(format!("pi@{ip_addr:?}"))
+        .arg("sudo")
+        .arg("reboot")
+        .exec();
+
     Ok(())
 }
