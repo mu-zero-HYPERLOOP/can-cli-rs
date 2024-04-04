@@ -151,6 +151,7 @@ $ rustup target add {PI_ARCH}"
         .unwrap();
 
     if reboot {
+        println!("Rebooting server");
         std::process::Command::new("ssh") 
             .arg("-i")
             .arg("~/.ssh/mu-zero")
@@ -159,16 +160,19 @@ $ rustup target add {PI_ARCH}"
             .arg("reboot")
             .exec();
     }else if restart {
-        std::process::Command::new("ssh") 
+        println!("Restarting server");
+        std::process::Command::new("ssh")
             .arg("-i")
             .arg("~/.ssh/mu-zero")
             .arg(format!("pi@{ip_addr:?}"))
-            .arg("sudo")
-            .arg("pkill")
-            .arg("canzero")
-            .arg("&&")
-            .arg("sudo /home/pi/.canzero/canzero run server")
-            .exec();
+            .arg("sudo pkill canzero")
+            .spawn().unwrap().wait().unwrap();
+        std::process::Command::new("ssh")
+            .arg("-i")
+            .arg("~/.ssh/mu-zero")
+            .arg(format!("pi@{ip_addr:?}"))
+            .arg("sudo /home/pi/.canzero/canzero run server > /home/pi/.canzero/canzero-server.log 2>&1 &")
+            .spawn().unwrap().wait().unwrap();
     }
 
     Ok(())

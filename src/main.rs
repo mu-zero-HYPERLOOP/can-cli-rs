@@ -7,7 +7,7 @@ use generate::command_generate;
 use get::command_get_server_log;
 use scan::command_scan;
 use server::command_server;
-use ssh::{command_scp, command_ssh, command_ssh_reboot};
+use ssh::{command_restart, command_scp, command_ssh, command_ssh_reboot};
 use update::{command_update_self, command_update_server};
 
 mod client;
@@ -122,9 +122,12 @@ async fn main() {
         },
         Some(("ssh", args)) => {
             let reboot: &bool = args.get_one("reboot").unwrap_or(&false);
+            let restart :&bool = args.get_one("restart").unwrap_or(&false);
             let host: Option<&String> = args.get_one("host");
             let host = host.cloned();
+            let host42 = host.clone();
             let upload: Option<&String> = args.get_one("upload");
+
             if let Some(upload) = upload {
                 let upload1 = upload.clone();
                 let host1 = host.clone();
@@ -153,12 +156,20 @@ async fn main() {
                     tokio::task::spawn_blocking(move || command_ssh_reboot(host))
                         .await
                         .unwrap()
-                } else {
+                } else if !*restart {
                     tokio::task::spawn_blocking(move || command_ssh(host))
                         .await
                         .unwrap()
+                }else {
+                    Ok(())
                 }
+            }.unwrap();
+            
+            if *restart {
+                command_restart(host42).unwrap();
             }
+
+            Ok(())
         }
         Some(("get", sub_matches)) => match sub_matches.subcommand() {
             Some(("server-log", args)) => {

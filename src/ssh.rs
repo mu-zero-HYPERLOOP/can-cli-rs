@@ -1,4 +1,7 @@
-use std::{env::args, net::IpAddr, os::unix::process::CommandExt, path::PathBuf, str::FromStr, time::Duration};
+use std::{
+    env::args, fmt::write, net::IpAddr, os::unix::process::CommandExt, path::PathBuf, str::FromStr,
+    time::Duration,
+};
 
 use serde_yaml::from_str;
 
@@ -63,10 +66,10 @@ pub fn scan_ssh() -> Result<Option<IpAddr>> {
     }
 }
 
-pub fn command_ssh(host : Option<String> ) -> Result<()> {
+pub fn command_ssh(host: Option<String>) -> Result<()> {
     let ip_addr = if let Some(host) = host {
         IpAddr::from_str(&host).expect("Not a ip address!")
-    }else {
+    } else {
         let Some(ip_addr) = scan_ssh()? else {
             return Ok(());
         };
@@ -82,16 +85,15 @@ pub fn command_ssh(host : Option<String> ) -> Result<()> {
     Ok(())
 }
 
-pub fn command_ssh_reboot(host : Option<String>) -> Result<()> {
+pub fn command_ssh_reboot(host: Option<String>) -> Result<()> {
     let ip_addr = if let Some(host) = host {
         IpAddr::from_str(&host).expect("Not a ip address!")
-    }else {
+    } else {
         let Some(ip_addr) = scan_ssh()? else {
             return Ok(());
         };
         ip_addr
     };
-
 
     std::process::Command::new("ssh")
         .arg("-i")
@@ -104,17 +106,44 @@ pub fn command_ssh_reboot(host : Option<String>) -> Result<()> {
     Ok(())
 }
 
-pub fn command_scp(path_str : String, host : Option<String>) -> Result<()>  {
-
+pub fn command_restart(host: Option<String>) -> Result<()> {
     let ip_addr = if let Some(host) = host {
         IpAddr::from_str(&host).expect("Not a ip address!")
-    }else {
+    } else {
         let Some(ip_addr) = scan_ssh()? else {
             return Ok(());
         };
         ip_addr
     };
- 
+    println!("Restarting server");
+    std::process::Command::new("ssh")
+        .arg("-i")
+        .arg("~/.ssh/mu-zero")
+        .arg(format!("pi@{ip_addr:?}"))
+        .arg("sudo pkill canzero")
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
+    std::process::Command::new("ssh")
+            .arg("-i")
+            .arg("~/.ssh/mu-zero")
+            .arg(format!("pi@{ip_addr:?}"))
+            .arg("sudo /home/pi/.canzero/canzero run server > /home/pi/.canzero/canzero-server.log 2>&1 &")
+            .spawn().unwrap().wait().unwrap();
+    Ok(())
+}
+
+pub fn command_scp(path_str: String, host: Option<String>) -> Result<()> {
+    let ip_addr = if let Some(host) = host {
+        IpAddr::from_str(&host).expect("Not a ip address!")
+    } else {
+        let Some(ip_addr) = scan_ssh()? else {
+            return Ok(());
+        };
+        ip_addr
+    };
+
     let path = PathBuf::from_str(&path_str).expect("FUCK YOU for using non utf8 filenames");
     if !path.exists() {
         return Err(Error::FileNotFound(path_str));
@@ -130,7 +159,6 @@ pub fn command_scp(path_str : String, host : Option<String>) -> Result<()>  {
         .unwrap()
         .wait()
         .unwrap();
-    
 
     Ok(())
 }
