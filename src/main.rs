@@ -83,6 +83,22 @@ fn cli() -> clap::Command {
             .about("Hosts a CANzero communication server")
             .alias("host")
         ))
+        .subcommand(
+            clap::Command::new("log-node")
+                .about("Run the logging-node Python script")
+                .arg(clap::Arg::new("path")
+                    .help("Path to the logging directory")
+                    .required(true)
+                    .index(1))
+                .arg(clap::Arg::new("node")
+                    .help("Node name")
+                    .required(true)
+                    .index(2))
+                .arg(clap::Arg::new("object-entry-name")
+                    .help("Name of the object entry")
+                    .required(true)
+                    .index(3))
+        )
         .subcommand(clap::Command::new("get")
             .subcommand(clap::Command::new("server-log").arg(clap::Arg::new("host").long("host").alias("hostname"))))
 }
@@ -170,7 +186,37 @@ async fn main() {
             }
 
             Ok(())
-        }
+        },
+        Some(("log-data", sub_matches)) => {
+            let path: &str = sub_matches.get_one::<String>("path").unwrap();
+            let node: &str = sub_matches.get_one::<String>("node").unwrap();
+            let object_entry_name: &str = sub_matches.get_one::<String>("object-entry-name").unwrap();
+
+            let output = Command::new("python")
+                .arg("../logging-node.py") 
+                .arg(path)
+                .arg(node)
+                .arg(object_entry_name)
+                .output()
+                .expect("Failed to execute command");
+
+            match output {
+                Ok(output) => {
+                    if output.status.success() {
+                        let stdout = String::from_utf8_lossy(&output.stdout);
+                        println!("Python Output: {}", stdout);
+                        Ok(())
+                    } else {
+                        let stderr = String::from_utf8_lossy(&output.stderr);
+                        eprintln!("Python Error: {}", stderr);
+                        Err(io::Error::new(ErrorKind::Other, "Python script execution failed"))
+                    }
+                },
+                Err(e) => {
+                    Err(e)
+                }
+            }
+        },
         Some(("get", sub_matches)) => match sub_matches.subcommand() {
             Some(("server-log", args)) => {
                 let host: Option<&String> = args.get_one("host");
