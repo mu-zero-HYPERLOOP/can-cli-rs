@@ -187,7 +187,7 @@ async fn main() {
 
             Ok(())
         },
-        Some(("log-data", sub_matches)) => {
+        Some(("log-node", sub_matches)) => {
             let path: &str = sub_matches.get_one::<String>("path").unwrap();
             let node: &str = sub_matches.get_one::<String>("node").unwrap();
             let object_entry_name: &str = sub_matches.get_one::<String>("object-entry-name").unwrap();
