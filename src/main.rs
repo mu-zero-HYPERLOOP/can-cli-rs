@@ -188,34 +188,35 @@ async fn main() {
             Ok(())
         },
         Some(("log-node", sub_matches)) => {
-            let path: &str = sub_matches.get_one::<String>("path").unwrap();
-            let node: &str = sub_matches.get_one::<String>("node").unwrap();
-            let object_entry_name: &str = sub_matches.get_one::<String>("object-entry-name").unwrap();
+            // let path: &str = sub_matches.get_one::<String>("path").unwrap();
+            // let node: &str = sub_matches.get_one::<String>("node").unwrap();
+            // let object_entry_name: &str = sub_matches.get_one::<String>("object-entry-name").unwrap();
 
-            let output = Command::new("python")
-                .arg("../logging-node.py") 
-                .arg(path)
-                .arg(node)
-                .arg(object_entry_name)
-                .output()
-                .expect("Failed to execute command");
+            // let output = Command::new("python")
+            //     .arg("../logging-node.py") 
+            //     .arg(path)
+            //     .arg(node)
+            //     .arg(object_entry_name)
+            //     .output()
+            //     .expect("Failed to execute command");
 
-            match output {
-                Ok(output) => {
-                    if output.status.success() {
-                        let stdout = String::from_utf8_lossy(&output.stdout);
-                        println!("Python Output: {}", stdout);
-                        Ok(())
-                    } else {
-                        let stderr = String::from_utf8_lossy(&output.stderr);
-                        eprintln!("Python Error: {}", stderr);
-                        Err(io::Error::new(ErrorKind::Other, "Python script execution failed"))
-                    }
-                },
-                Err(e) => {
-                    Err(e)
-                }
-            }
+            // match output {
+            //     Ok(output) => {
+            //         if output.status.success() {
+            //             let stdout = String::from_utf8_lossy(&output.stdout);
+            //             println!("Python Output: {}", stdout);
+            //             Ok(())
+            //         } else {
+            //             let stderr = String::from_utf8_lossy(&output.stderr);
+            //             eprintln!("Python Error: {}", stderr);
+            //             Err(io::Error::new(ErrorKind::Other, "Python script execution failed"))
+            //         }
+            //     },
+            //     Err(e) => {
+            //         Err(e)
+            //     }
+            // }
+            Ok(())
         },
         Some(("get", sub_matches)) => match sub_matches.subcommand() {
             Some(("server-log", args)) => {
