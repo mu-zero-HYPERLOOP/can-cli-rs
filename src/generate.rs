@@ -33,7 +33,7 @@ pub fn command_generate(node_name : &str, output_dir : &str) -> Result<()> {
     let mut options = can_c_codegen_rs::options::Options::default();
 
     let mut source_file_path = output_dir.clone();
-    source_file_path.push("canzero.c");
+    source_file_path.push("canzero.cpp");
     options.set_source_file_path(source_file_path.to_str().unwrap());
 
     let mut header_file_path = output_dir.clone();
