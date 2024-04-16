@@ -1,15 +1,19 @@
 use std::{path::PathBuf, str::FromStr};
 
 use clap::ArgAction;
+#[cfg(target_os = "linux")]
 use client::command_client;
 use config::{command_config_get, command_config_set};
 use generate::command_generate;
 use get::command_get_server_log;
 use scan::command_scan;
+#[cfg(target_os = "linux")]
 use server::command_server;
+
 use ssh::{command_restart, command_scp, command_ssh, command_ssh_reboot};
 use update::{command_update_self, command_update_server};
 
+#[cfg(target_os = "linux")]
 mod client;
 mod config;
 mod errors;
@@ -17,6 +21,7 @@ mod generate;
 mod get;
 mod gitutils;
 mod scan;
+#[cfg(target_os = "linux")]
 mod server;
 mod ssh;
 mod update;
@@ -138,7 +143,7 @@ async fn main() {
         },
         Some(("ssh", args)) => {
             let reboot: &bool = args.get_one("reboot").unwrap_or(&false);
-            let restart :&bool = args.get_one("restart").unwrap_or(&false);
+            let restart: &bool = args.get_one("restart").unwrap_or(&false);
             let host: Option<&String> = args.get_one("host");
             let host = host.cloned();
             let host42 = host.clone();
@@ -176,24 +181,25 @@ async fn main() {
                     tokio::task::spawn_blocking(move || command_ssh(host))
                         .await
                         .unwrap()
-                }else {
+                } else {
                     Ok(())
                 }
-            }.unwrap();
-            
+            }
+            .unwrap();
+
             if *restart {
                 command_restart(host42).unwrap();
             }
 
             Ok(())
-        },
+        }
         Some(("log-node", sub_matches)) => {
             // let path: &str = sub_matches.get_one::<String>("path").unwrap();
             // let node: &str = sub_matches.get_one::<String>("node").unwrap();
             // let object_entry_name: &str = sub_matches.get_one::<String>("object-entry-name").unwrap();
 
             // let output = Command::new("python")
-            //     .arg("../logging-node.py") 
+            //     .arg("../logging-node.py")
             //     .arg(path)
             //     .arg(node)
             //     .arg(object_entry_name)
@@ -217,7 +223,7 @@ async fn main() {
             //     }
             // }
             Ok(())
-        },
+        }
         Some(("get", sub_matches)) => match sub_matches.subcommand() {
             Some(("server-log", args)) => {
                 let host: Option<&String> = args.get_one("host");
@@ -231,11 +237,18 @@ async fn main() {
                 .await
                 .unwrap()
         }
-        Some(("run", sub_matches)) => match sub_matches.subcommand() {
-            Some(("client", _)) => command_client().await,
-            Some(("server", _)) => command_server().await,
-            _ => unreachable!(),
-        },
+        Some(("run", sub_matches)) => {
+            if cfg!(linux) {
+                match sub_matches.subcommand() {
+                    Some(("client", _)) => command_client().await,
+                    Some(("server", _)) => command_server().await,
+                    _ => unreachable!(),
+                }
+            }else {
+                eprintln!("run command not supported on os other than linux");
+                Ok(())
+            }
+        }
         _ => unreachable!(),
     };
     match result {
