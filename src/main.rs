@@ -238,16 +238,16 @@ async fn main() {
                 .unwrap()
         }
         Some(("run", sub_matches)) => {
-            if cfg!(linux) {
+            #[cfg(target_os = "macos")]
+            {
                 match sub_matches.subcommand() {
                     Some(("client", _)) => command_client().await,
                     Some(("server", _)) => command_server().await,
                     _ => unreachable!(),
                 }
-            }else {
-                eprintln!("run command not supported on os other than linux");
-                Ok(())
+                return Ok(())
             }
+            Ok(())
         }
         _ => unreachable!(),
     };
