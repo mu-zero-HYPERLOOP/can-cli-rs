@@ -238,14 +238,13 @@ async fn main() {
                 .unwrap()
         }
         Some(("run", sub_matches)) => {
-            #[cfg(target_os = "macos")]
+            #[cfg(target_os = "linux")]
             {
                 match sub_matches.subcommand() {
                     Some(("client", _)) => command_client().await,
                     Some(("server", _)) => command_server().await,
                     _ => unreachable!(),
-                }
-                return Ok(())
+                }.unwrap();
             }
             Ok(())
         }
