@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.4.7", features = ["derive"] }
-git2 = { version = "0.18.0", features = ["vendored-libgit2"]}
+# git2 = { version = "0.18.0", features = ["vendored-libgit2"]}
 dirs = { version = "5.0.0" }
 can-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-config-rs.git"}
 can-c-codegen-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git"}

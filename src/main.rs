@@ -19,7 +19,6 @@ mod config;
 mod errors;
 mod generate;
 mod get;
-mod gitutils;
 mod scan;
 #[cfg(target_os = "linux")]
 mod server;
@@ -195,7 +194,7 @@ async fn main() {
 
             Ok(())
         }
-        Some(("log-node", sub_matches)) => {
+        Some(("log-node", _sub_matches)) => {
             // let path: &str = sub_matches.get_one::<String>("path").unwrap();
             // let node: &str = sub_matches.get_one::<String>("node").unwrap();
             // let object_entry_name: &str = sub_matches.get_one::<String>("object-entry-name").unwrap();

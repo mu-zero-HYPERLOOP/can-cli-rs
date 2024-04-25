@@ -1,5 +1,5 @@
 use std::{
-    env::args, fmt::write, net::IpAddr, os::unix::process::CommandExt, path::PathBuf, str::FromStr,
+    net::IpAddr, os::unix::process::CommandExt, path::PathBuf, str::FromStr,
     time::Duration,
 };
 
