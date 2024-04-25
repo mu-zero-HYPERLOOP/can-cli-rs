@@ -13,7 +13,7 @@ const CANZERO_CLI_PATH: &'static str = "canzero-cli";
 const PI_ARCH: &'static str = "armv7-unknown-linux-gnueabihf";
 const CANZERO_CLI_BIN_NAME: &'static str = "canzero";
 
-pub fn command_update_server(host: Option<&String>, reboot: bool, restart : bool) -> Result<()> {
+pub fn command_update_server(host: Option<&String>, reboot: bool, restart: bool) -> Result<()> {
     let appdata = AppData::read()?;
     let Some(config_path) = appdata.get_config_path() else {
         return Err(Error::NoConfigSelected);
@@ -51,22 +51,25 @@ $ rustup target add {PI_ARCH}"
     let mut canzero_cli_path = AppData::dir();
     canzero_cli_path.push(CANZERO_CLI_PATH);
     if canzero_cli_path.exists() {
-        std::process::Command::new("git")
+        if let Err(err) = std::process::Command::new("git")
             .arg("fetch")
             .current_dir(&canzero_cli_path)
             .spawn()
             .unwrap()
             .wait()
-            .unwrap();
-        std::process::Command::new("git")
+        {
+            eprintln!("{err:?}");
+        };
+        if let Err(err) = std::process::Command::new("git")
             .arg("reset")
             .arg("--hard")
             .arg("origin/main")
             .current_dir(&canzero_cli_path)
             .spawn()
             .unwrap()
-            .wait()
-            .unwrap();
+            .wait() {
+            eprintln!("{err:?}");
+        };
     } else {
         std::process::Command::new("git")
             .arg("clone")
@@ -79,15 +82,16 @@ $ rustup target add {PI_ARCH}"
     }
 
     println!("Cross-Compiling {CANZERO_CLI_REPO}");
-    std::process::Command::new("cross")
+    if let Err(err) = std::process::Command::new("cross")
         .arg("build")
         .arg("--release")
         .arg(&format!("--target={PI_ARCH}"))
         .current_dir(&canzero_cli_path)
         .spawn()
         .unwrap()
-        .wait()
-        .unwrap();
+        .wait() {
+        eprintln!("{err:?}");
+    };
 
     let mut canzero_cli_bin_path = canzero_cli_path.clone();
     canzero_cli_bin_path.push("target");
@@ -152,21 +156,24 @@ $ rustup target add {PI_ARCH}"
 
     if reboot {
         println!("Rebooting server");
-        std::process::Command::new("ssh") 
+        std::process::Command::new("ssh")
             .arg("-i")
             .arg("~/.ssh/mu-zero")
             .arg(format!("pi@{ip_addr:?}"))
             .arg("sudo")
             .arg("reboot")
             .exec();
-    }else if restart {
+    } else if restart {
         println!("Restarting server");
         std::process::Command::new("ssh")
             .arg("-i")
             .arg("~/.ssh/mu-zero")
             .arg(format!("pi@{ip_addr:?}"))
             .arg("sudo pkill canzero")
-            .spawn().unwrap().wait().unwrap();
+            .spawn()
+            .unwrap()
+            .wait()
+            .unwrap();
         std::process::Command::new("ssh")
             .arg("-i")
             .arg("~/.ssh/mu-zero")

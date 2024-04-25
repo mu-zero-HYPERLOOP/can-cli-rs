@@ -34,7 +34,7 @@ def plot_data(data, node, object_entry, ax, separate_plots):
             else:
                 ax = axes
             ax.plot(data.iloc[:, 0], data.iloc[:, idx+1], marker='o', linestyle='-', label=f"{column}")
-            ax.set_xlabel("Timestamp (microseconds)")
+            ax.set_xlabel("Timestamp [us]")
             ax.set_ylabel(f"{column} Value")
             ax.grid(True)
         plt.tight_layout()
