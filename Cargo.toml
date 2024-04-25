@@ -19,5 +19,9 @@ tokio = { version = "1.37.0", features = ["full"] }
 openssl = { version = "0.10", features = ["vendored"] }
 ssh2 = { version = "0.9.4", features = ["vendored-openssl"] }
 
-[target.'cfg(target_os = "linux")'.dependencies]
+
+[target.'cfg(not(target_os = "linux"))'.dependencies]
 can-tcp-bridge-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-tcp-bridge-rs.git" }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+can-tcp-bridge-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-tcp-bridge-rs.git", features = ["socket-can"]}
