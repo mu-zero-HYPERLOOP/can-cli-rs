@@ -69,6 +69,7 @@ fn cli() -> clap::Command {
                     .arg(clap::Arg::new("host").long("host").required(false))
                     .arg(clap::Arg::new("reboot").long("reboot").required(false).action(ArgAction::SetTrue))
                     .arg(clap::Arg::new("restart").long("restart").short('r').required(false).action(ArgAction::SetTrue))
+                    .arg(clap::Arg::new("build").long("build").short('b').required(false).action(ArgAction::SetTrue))
             )
             .subcommand(clap::Command::new("self"))
         ).subcommand(
@@ -135,7 +136,8 @@ async fn main() {
                 let host: Option<&String> = args.get_one("host");
                 let reboot: bool = *args.get_one("reboot").unwrap_or(&false);
                 let restart: bool = *args.get_one("restart").unwrap_or(&false);
-                command_update_server(host, reboot, restart).unwrap();
+                let build : bool = *args.get_one("build").unwrap_or(&false);
+                command_update_server(host, reboot, restart, build).unwrap();
                 Ok(())
             }
             Some(("self", _)) => command_update_self(),
