@@ -58,6 +58,7 @@ $ rustup target add {PI_ARCH}"
         println!("Downloading {CANZERO_CLI_REPO}");
 
         if canzero_cli_path.exists() {
+            println!("Updaing {CANZERO_CLI_REPO}");
             if let Err(err) = std::process::Command::new("git")
                 .arg("fetch")
                 .current_dir(&canzero_cli_path)
@@ -79,6 +80,7 @@ $ rustup target add {PI_ARCH}"
                 eprintln!("{err:?}");
             };
         } else {
+            println!("Cloning {CANZERO_CLI_REPO}");
             std::process::Command::new("git")
                 .arg("clone")
                 .arg(CANZERO_CLI_REPO)
