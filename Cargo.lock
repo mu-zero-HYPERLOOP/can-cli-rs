@@ -162,7 +162,7 @@ dependencies = [
 [[package]]
 name = "can-c-codegen-rs"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git#0d45e74739520df2dc47848de6ad70e32ef4fd93"
+source = "git+https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git#efba96b6bc5bb2c60ff27f2aef705a6623329b1e"
 dependencies = [
  "can-config-rs",
 ]
