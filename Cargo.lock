@@ -170,7 +170,7 @@ dependencies = [
 [[package]]
 name = "can-config-rs"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/can-config-rs.git#c8384437dbfbb83afea3654e0f5e2319b8cd5d9d"
+source = "git+https://github.com/mu-zero-HYPERLOOP/can-config-rs.git#70750d1e7187e338ab0781a5bced966a891b9ae6"
 dependencies = [
  "bit_reverse",
  "can-dbc",
@@ -220,7 +220,7 @@ dependencies = [
 [[package]]
 name = "can-yaml-config-rs"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/can-yaml-config-rs.git#f7d23bf09b4eb09048bb86ab9cf857c3c290a8a3"
+source = "git+https://github.com/mu-zero-HYPERLOOP/can-yaml-config-rs.git#b64e3ee0b522366535c9633d3f55f422c38e0464"
 dependencies = [
  "can-config-rs",
  "regex",
