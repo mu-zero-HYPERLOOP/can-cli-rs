@@ -4,8 +4,7 @@ use clap::ArgAction;
 #[cfg(target_os = "linux")]
 use client::command_client;
 use config::{
-    command_config_get, command_config_messages_hash, command_config_set,
-    command_conifg_messages_list,
+    command_config_check, command_config_get, command_config_messages_hash, command_config_set, command_conifg_messages_list
 };
 use generate::command_generate;
 use get::command_get_server_log;
@@ -53,7 +52,7 @@ fn cli() -> clap::Command {
                             .arg(clap::Arg::new("bus").short('b').long("bus"))
                         )
                         .subcommand(clap::Command::new("hash"))
-                ),
+                ).subcommand(clap::Command::new("check")),
         )
         .subcommand(
             clap::Command::new("generate")
@@ -137,6 +136,7 @@ async fn main() {
                 Some(("hash", _)) => command_config_messages_hash(),
                 _ => unreachable!(),
             },
+            Some(("check", _)) => command_config_check(),
 
             _ => unreachable!(),
         },
