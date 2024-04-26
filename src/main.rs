@@ -3,7 +3,10 @@ use std::{path::PathBuf, str::FromStr};
 use clap::ArgAction;
 #[cfg(target_os = "linux")]
 use client::command_client;
-use config::{command_config_get, command_config_set};
+use config::{
+    command_config_get, command_config_messages_hash, command_config_set,
+    command_conifg_messages_list,
+};
 use generate::command_generate;
 use get::command_get_server_log;
 use scan::command_scan;
@@ -43,6 +46,13 @@ fn cli() -> clap::Command {
                         .about("sets the path to the CANzero network configuration file")
                         .arg(clap::Arg::new("path").index(1).required(true))
 
+                ).subcommand(
+                     clap::Command::new("messages")
+                        .subcommand(clap::Command::new("list")
+                            .arg(clap::Arg::new("node").short('n').long("node"))
+                            .arg(clap::Arg::new("bus").short('b').long("bus"))
+                        )
+                        .subcommand(clap::Command::new("hash"))
                 ),
         )
         .subcommand(
@@ -50,7 +60,7 @@ fn cli() -> clap::Command {
             .about("Generates platform independent C layer for embeeded devices")
             .alias("gen")
             .arg(clap::Arg::new("node")
-                .short('c')
+                .short('n')
                 .long("node")
                 .required(true))
             .arg(clap::Arg::new("output")
@@ -118,6 +128,15 @@ async fn main() {
                 command_config_set(PathBuf::from_str(path).unwrap())
             }
             Some(("get-path", _)) => command_config_get(),
+            Some(("messages", sub_matches)) => match sub_matches.subcommand() {
+                Some(("list", args)) => {
+                    let node: Option<String> = args.get_one("node").cloned();
+                    let bus: Option<String> = args.get_one("bus").cloned();
+                    command_conifg_messages_list(node, bus)
+                }
+                Some(("hash", _)) => command_config_messages_hash(),
+                _ => unreachable!(),
+            },
 
             _ => unreachable!(),
         },
@@ -135,7 +154,7 @@ async fn main() {
                 let host: Option<&String> = args.get_one("host");
                 let reboot: bool = *args.get_one("reboot").unwrap_or(&false);
                 let restart: bool = *args.get_one("restart").unwrap_or(&false);
-                let build : bool = *args.get_one("build").unwrap_or(&false);
+                let build: bool = *args.get_one("build").unwrap_or(&false);
                 command_update_server(host, reboot, restart, build).unwrap();
                 Ok(())
             }
@@ -204,6 +223,7 @@ async fn main() {
             //     .arg(path)
             //     .arg(node)
             //     .arg(object_entry_name)
+
             //     .output()
             //     .expect("Failed to execute command");
 
@@ -245,7 +265,8 @@ async fn main() {
                     Some(("client", _)) => command_client().await,
                     Some(("server", _)) => command_server().await,
                     _ => unreachable!(),
-                }.unwrap();
+                }
+                .unwrap();
             }
             Ok(())
         }

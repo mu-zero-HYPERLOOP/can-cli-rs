@@ -170,7 +170,7 @@ dependencies = [
 [[package]]
 name = "can-config-rs"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/can-config-rs.git#78ebdb3c1cf5435b5bcd68bab80ef48a940a5eb4"
+source = "git+https://github.com/mu-zero-HYPERLOOP/can-config-rs.git#c8384437dbfbb83afea3654e0f5e2319b8cd5d9d"
 dependencies = [
  "bit_reverse",
  "can-dbc",
@@ -1452,9 +1452,9 @@ checksum = "bec47e5bfd1bff0eeaf6d8b485cc1074891a197ab4225d504cb7a1ab88b02bf0"
 
 [[package]]
 name = "winnow"
-version = "0.6.6"
+version = "0.6.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0c976aaaa0e1f90dbb21e9587cdaf1d9679a1cde8875c0d6bd83ab96a208352"
+checksum = "14b9415ee827af173ebb3f15f9083df5a122eb93572ec28741fb153356ea2578"
 dependencies = [
  "memchr",
 ]

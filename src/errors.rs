@@ -16,6 +16,8 @@ pub enum Error {
     AppDataError(AppDataError),
     MissingDependency(String),
     InvalidResponse,
+    InvalidNodeName(String),
+    InvalidBusName(String),
 }
 
 impl From<AppDataError> for Error {
@@ -54,6 +56,8 @@ impl Display for Error {
             Error::AppDataError(err) => write!(f, "{err:?}"),
             Error::MissingDependency(dep) => write!(f, "Missing dependency {dep}"),
             Error::InvalidResponse => write!(f, "Invalid Response"),
+            Error::InvalidNodeName(node_name) => write!(f, "Invalid node name : {node_name}"),
+            Error::InvalidBusName(bus_name) => write!(f, "Invalid bus name : {bus_name}"),
         }
     }
 }
