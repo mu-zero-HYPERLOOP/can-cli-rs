@@ -136,7 +136,7 @@ $ rustup target add {PI_ARCH}"
             .arg("-i")
             .arg("~/.ssh/mu-zero")
             .arg(format!("pi@{ip_addr:?}"))
-            .arg("mkdir -p ~/.canzero/config")
+            .arg("mkdir -p ~/.canzero/network-config")
             .spawn()
             .unwrap()
             .wait()
