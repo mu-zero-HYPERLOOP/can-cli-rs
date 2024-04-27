@@ -192,8 +192,7 @@ async fn main() {
                 }
             } else {
                 if *reboot {
-                    command_ssh_reboot(host)
-                        .await
+                    command_ssh_reboot(host).await
                 } else if !*restart {
                     command_ssh(host).await
                 } else {
@@ -249,9 +248,7 @@ async fn main() {
         },
         Some(("scan", args)) => {
             let inf: bool = *args.get_one("loop").unwrap_or(&false);
-            tokio::task::spawn_blocking(move || command_scan(inf))
-                .await
-                .unwrap()
+            command_scan(inf).await
         }
         Some(("run", sub_matches)) => {
             #[cfg(target_os = "linux")]

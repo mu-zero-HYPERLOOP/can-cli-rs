@@ -145,11 +145,11 @@ $ rustup target add {PI_ARCH}"
         std::process::Command::new("scp")
             .arg("-i")
             .arg("~/.ssh/mu-zero")
+            .arg("-r")
             .arg(config_dir)
             .arg(&format!(
                 "pi@{ip_addr:?}:/home/pi/.canzero/network-config/"
             ))
-            .arg("-r")
             .spawn()
             .unwrap()
             .wait()
