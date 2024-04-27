@@ -112,6 +112,13 @@ $ rustup target add {PI_ARCH}"
             };
             ip_addr
         };
+        let mut config_files = can_yaml_config_rs::parse_yaml_config_files_from_file(config_path.to_str().unwrap()).unwrap();
+        config_files.push(config_path.clone());
+        let config_dir = common_path::common_path_all(config_files.iter().map(|p| p.as_path())).expect("Failed to find common network-config directory");
+
+        // assumes that the main config file is the the common directory
+        let relative_config_path = config_path.file_name().unwrap().to_str().unwrap(); 
+
 
         std::process::Command::new("ssh")
             .arg("-i")
@@ -122,14 +129,27 @@ $ rustup target add {PI_ARCH}"
             .unwrap()
             .wait()
             .unwrap();
+        
+
+        // copy network config
+        std::process::Command::new("ssh")
+            .arg("-i")
+            .arg("~/.ssh/mu-zero")
+            .arg(format!("pi@{ip_addr:?}"))
+            .arg("mkdir -p ~/.canzero/config")
+            .spawn()
+            .unwrap()
+            .wait()
+            .unwrap();
 
         std::process::Command::new("scp")
             .arg("-i")
             .arg("~/.ssh/mu-zero")
-            .arg(config_path)
+            .arg(config_dir)
             .arg(&format!(
-                "pi@{ip_addr:?}:/home/pi/.canzero/canzero-network-config.yaml"
+                "pi@{ip_addr:?}:/home/pi/.canzero/network-config/"
             ))
+            .arg("-r")
             .spawn()
             .unwrap()
             .wait()
@@ -162,7 +182,7 @@ $ rustup target add {PI_ARCH}"
             .arg("sudo /home/pi/.canzero/canzero")
             .arg("config")
             .arg("set-path")
-            .arg("/home/pi/.canzero/canzero-network-config.yaml")
+            .arg(&format!("/home/pi/.canzero/network-config/{relative_config_path}"))
             .spawn()
             .unwrap()
             .wait()
