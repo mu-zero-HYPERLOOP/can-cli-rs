@@ -202,7 +202,7 @@ dependencies = [
 [[package]]
 name = "can-tcp-bridge-rs"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/can-tcp-bridge-rs.git#1a9c34652e602e8a6b4908b2e9e9aa508452c2d1"
+source = "git+https://github.com/mu-zero-HYPERLOOP/can-tcp-bridge-rs.git#9a43462807ce8db13714393f340e61d7246c63c4"
 dependencies = [
  "bincode",
  "can-config-rs",

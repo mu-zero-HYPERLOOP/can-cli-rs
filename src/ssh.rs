@@ -1,8 +1,6 @@
-use std::{
-    net::IpAddr, os::unix::process::CommandExt, path::PathBuf, str::FromStr,
-    time::Duration,
-};
+use std::{net::IpAddr, os::unix::process::CommandExt, path::PathBuf, str::FromStr};
 
+use can_tcp_bridge_rs::frame::NetworkDescription;
 use serde_yaml::from_str;
 
 use crate::errors::{Error, Result};
@@ -10,41 +8,28 @@ use crate::errors::{Error, Result};
 const BROADCAST_PORT: u16 = 9002u16;
 const SERVICE_NAME: &'static str = "CANzero";
 
-pub fn scan_ssh() -> Result<Option<IpAddr>> {
+pub async fn scan_ssh() -> Result<Option<NetworkDescription>> {
     loop {
-        println!("Scanning the network...");
-        let socket = std::net::UdpSocket::bind("0.0.0.0:0")?;
-        socket.set_broadcast(true)?;
-        let broadcast_addr = format!("255.255.255.255:{BROADCAST_PORT}");
-
-        let mut hello_msg = vec![0u8];
-        hello_msg.extend_from_slice(SERVICE_NAME.as_bytes());
-        socket.send_to(&hello_msg, broadcast_addr)?;
-        socket.set_read_timeout(Some(Duration::from_millis(1000)))?;
-
-        let mut rx_buffer = [0u8; 1024];
-        let mut connections: Vec<(IpAddr, u16)> = vec![];
-        loop {
-            let Ok((packet_size, sock_addr)) = socket.recv_from(&mut rx_buffer) else {
-                break;
-            };
-            let ty = rx_buffer[0];
-            let server_port = (rx_buffer[1] as u16) | ((rx_buffer[2] as u16) << 8);
-            let Ok(server_service_name) = std::str::from_utf8(&rx_buffer[3..packet_size]) else {
-                continue;
-            };
-            if ty == 1u8 && server_service_name == SERVICE_NAME {
-                connections.push((sock_addr.ip(), server_port));
-            }
-        }
+        let connections = can_tcp_bridge_rs::client::udp_discover::start_udp_discover(
+            SERVICE_NAME,
+            BROADCAST_PORT,
+        )
+        .await
+        .unwrap();
 
         if connections.is_empty() {
             println!("No connections found");
             return Ok(None);
         }
         println!("Found TCP servers at:");
-        for (i, (ip_addr, _)) in connections.iter().enumerate() {
-            println!("-{} : {ip_addr}", i + 1);
+        for (i, nd) in connections.iter().enumerate() {
+            println!(
+                "-{} : {} at  {}:{}",
+                i + 1,
+                nd.server_name,
+                nd.server_addr,
+                nd.service_port
+            );
         }
         println!(
             "Select server {:?} or 'r' to rescan",
@@ -61,19 +46,19 @@ pub fn scan_ssh() -> Result<Option<IpAddr>> {
             let Some(con) = connections.get(con_index.saturating_sub(1)) else {
                 return Err(Error::InvalidResponse);
             };
-            return Ok(Some(con.0.clone()));
+            return Ok(Some(con.to_owned()));
         }
     }
 }
 
-pub fn command_ssh(host: Option<String>) -> Result<()> {
+pub async fn command_ssh(host: Option<String>) -> Result<()> {
     let ip_addr = if let Some(host) = host {
         IpAddr::from_str(&host).expect("Not a ip address!")
     } else {
-        let Some(ip_addr) = scan_ssh()? else {
+        let Some(nd) = scan_ssh().await? else {
             return Ok(());
         };
-        ip_addr
+        nd.server_addr
     };
 
     std::process::Command::new("ssh")
@@ -85,14 +70,14 @@ pub fn command_ssh(host: Option<String>) -> Result<()> {
     Ok(())
 }
 
-pub fn command_ssh_reboot(host: Option<String>) -> Result<()> {
+pub async fn command_ssh_reboot(host: Option<String>) -> Result<()> {
     let ip_addr = if let Some(host) = host {
         IpAddr::from_str(&host).expect("Not a ip address!")
     } else {
-        let Some(ip_addr) = scan_ssh()? else {
+        let Some(nd) = scan_ssh().await? else {
             return Ok(());
         };
-        ip_addr
+        nd.server_addr
     };
 
     std::process::Command::new("ssh")
@@ -106,14 +91,14 @@ pub fn command_ssh_reboot(host: Option<String>) -> Result<()> {
     Ok(())
 }
 
-pub fn command_restart(host: Option<String>) -> Result<()> {
+pub async fn command_restart(host: Option<String>) -> Result<()> {
     let ip_addr = if let Some(host) = host {
         IpAddr::from_str(&host).expect("Not a ip address!")
     } else {
-        let Some(ip_addr) = scan_ssh()? else {
+        let Some(nd) = scan_ssh().await? else {
             return Ok(());
         };
-        ip_addr
+        nd.server_addr
     };
     println!("Restarting server");
     std::process::Command::new("ssh")
@@ -134,14 +119,14 @@ pub fn command_restart(host: Option<String>) -> Result<()> {
     Ok(())
 }
 
-pub fn command_scp(path_str: String, host: Option<String>) -> Result<()> {
+pub async fn command_scp(path_str: String, host: Option<String>) -> Result<()> {
     let ip_addr = if let Some(host) = host {
         IpAddr::from_str(&host).expect("Not a ip address!")
     } else {
-        let Some(ip_addr) = scan_ssh()? else {
+        let Some(nd) = scan_ssh().await? else {
             return Ok(());
         };
-        ip_addr
+        nd.server_addr
     };
 
     let path = PathBuf::from_str(&path_str).expect("FUCK YOU for using non utf8 filenames");

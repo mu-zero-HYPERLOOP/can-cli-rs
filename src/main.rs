@@ -4,7 +4,8 @@ use clap::ArgAction;
 #[cfg(target_os = "linux")]
 use client::command_client;
 use config::{
-    command_config_check, command_config_get, command_config_messages_hash, command_config_set, command_conifg_messages_list
+    command_config_check, command_config_get, command_config_messages_hash, command_config_set,
+    command_conifg_messages_list,
 };
 use generate::command_generate;
 use get::command_get_server_log;
@@ -155,7 +156,9 @@ async fn main() {
                 let reboot: bool = *args.get_one("reboot").unwrap_or(&false);
                 let restart: bool = *args.get_one("restart").unwrap_or(&false);
                 let build: bool = *args.get_one("build").unwrap_or(&false);
-                command_update_server(host, reboot, restart, build).unwrap();
+                command_update_server(host, reboot, restart, build)
+                    .await
+                    .unwrap();
                 Ok(())
             }
             Some(("self", _)) => command_update_self(),
@@ -174,19 +177,14 @@ async fn main() {
                 let host1 = host.clone();
                 let upload2 = upload.clone();
                 let host2 = host.clone();
-                if let Err(err) = tokio::task::spawn_blocking(move || command_scp(upload1, host1))
-                    .await
-                    .unwrap()
-                {
+                if let Err(err) = command_scp(upload1, host1).await {
                     Err(err)
                 } else {
-                    if let Err(err) = command_scp(upload2, host2) {
+                    if let Err(err) = command_scp(upload2, host2).await {
                         Err(err)
                     } else {
                         if *reboot {
-                            tokio::task::spawn_blocking(move || command_ssh_reboot(host))
-                                .await
-                                .unwrap()
+                            command_ssh_reboot(host).await
                         } else {
                             Ok(())
                         }
@@ -194,13 +192,10 @@ async fn main() {
                 }
             } else {
                 if *reboot {
-                    tokio::task::spawn_blocking(move || command_ssh_reboot(host))
+                    command_ssh_reboot(host)
                         .await
-                        .unwrap()
                 } else if !*restart {
-                    tokio::task::spawn_blocking(move || command_ssh(host))
-                        .await
-                        .unwrap()
+                    command_ssh(host).await
                 } else {
                     Ok(())
                 }
@@ -208,7 +203,7 @@ async fn main() {
             .unwrap();
 
             if *restart {
-                command_restart(host42).unwrap();
+                command_restart(host42).await.unwrap()
             }
 
             Ok(())
@@ -248,7 +243,7 @@ async fn main() {
         Some(("get", sub_matches)) => match sub_matches.subcommand() {
             Some(("server-log", args)) => {
                 let host: Option<&String> = args.get_one("host");
-                command_get_server_log(host)
+                command_get_server_log(host).await
             }
             _ => unreachable!(),
         },

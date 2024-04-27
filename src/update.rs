@@ -13,7 +13,7 @@ const CANZERO_CLI_PATH: &'static str = "canzero-cli";
 const PI_ARCH: &'static str = "armv7-unknown-linux-gnueabihf";
 const CANZERO_CLI_BIN_NAME: &'static str = "canzero";
 
-pub fn command_update_server(
+pub async fn command_update_server(
     host: Option<&String>,
     reboot: bool,
     restart: bool,
@@ -107,10 +107,10 @@ $ rustup target add {PI_ARCH}"
         let ip_addr = if let Some(host) = host {
             IpAddr::from_str(host).expect("Not a ip address!")
         } else {
-            let Some(ip_addr) = scan_ssh()? else {
+            let Some(nd) = scan_ssh().await? else {
                 return Ok(());
             };
-            ip_addr
+            nd.server_addr
         };
         let mut config_files = can_yaml_config_rs::parse_yaml_config_files_from_file(config_path.to_str().unwrap()).unwrap();
         config_files.push(config_path.clone());
