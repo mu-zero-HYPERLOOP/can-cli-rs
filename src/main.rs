@@ -1,8 +1,6 @@
 use std::{path::PathBuf, str::FromStr};
 
 use clap::ArgAction;
-#[cfg(target_os = "linux")]
-use client::command_client;
 use config::{
     command_config_check, command_config_get, command_config_messages_hash, command_config_set,
     command_conifg_messages_list,
@@ -10,20 +8,18 @@ use config::{
 use generate::command_generate;
 use get::command_get_server_log;
 use scan::command_scan;
-#[cfg(target_os = "linux")]
-use server::command_server;
 
 use ssh::{command_restart, command_scp, command_ssh, command_ssh_reboot};
 use update::{command_update_self, command_update_server};
 
-#[cfg(target_os = "linux")]
+use crate::{client::command_client, server::command_server};
+
 mod client;
 mod config;
 mod errors;
 mod generate;
 mod get;
 mod scan;
-#[cfg(target_os = "linux")]
 mod server;
 mod ssh;
 mod update;
