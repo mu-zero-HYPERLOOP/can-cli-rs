@@ -10,7 +10,7 @@ const SERVICE_NAME: &'static str = "CANzero";
 
 pub async fn scan_ssh() -> Result<Option<NetworkDescription>> {
     loop {
-        let connections = can_tcp_bridge_rs::client::udp_discover::start_udp_discover(
+        let connections = can_tcp_bridge_rs::discovery::udp_discover::start_udp_discover(
             SERVICE_NAME,
             BROADCAST_PORT,
         )

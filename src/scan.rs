@@ -7,7 +7,7 @@ const SERVICE_NAME: &'static str = "CANzero";
 pub async fn command_scan(inf: bool) -> Result<()> {
 
     loop {
-        let connections = can_tcp_bridge_rs::client::udp_discover::start_udp_discover(SERVICE_NAME, BROADCAST_PORT).await.unwrap();
+        let connections = can_tcp_bridge_rs::discovery::udp_discover::start_udp_discover(SERVICE_NAME, BROADCAST_PORT).await.unwrap();
         if connections.is_empty() {
             println!("No connections found");
         } else {
