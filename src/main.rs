@@ -250,7 +250,6 @@ async fn main() {
             command_scan(inf).await
         }
         Some(("run", sub_matches)) => {
-            #[cfg(target_os = "linux")]
             {
                 match sub_matches.subcommand() {
                     Some(("client", _)) => command_client().await,
