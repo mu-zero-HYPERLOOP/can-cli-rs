@@ -76,7 +76,7 @@ fn cli() -> clap::Command {
                     .arg(clap::Arg::new("restart").long("restart").short('r').required(false).action(ArgAction::SetTrue))
                     .arg(clap::Arg::new("build").long("build").short('b').required(false).action(ArgAction::SetTrue))
             )
-            .subcommand(clap::Command::new("self"))
+            .subcommand(clap::Command::new("self").arg(clap::Arg::new("socketcan").long("socketcan").action(ArgAction::SetTrue)))
         ).subcommand(
             clap::Command::new("ssh")
             .arg(clap::Arg::new("host").long("host").alias("hostname").required(false))
@@ -157,7 +157,10 @@ async fn main() {
                     .unwrap();
                 Ok(())
             }
-            Some(("self", _)) => command_update_self(),
+            Some(("self", args)) => {
+                let socketcan : bool = args.get_one("socketcan").cloned().unwrap_or(false);
+                command_update_self(socketcan)
+            }
             _ => unreachable!(),
         },
         Some(("ssh", args)) => {

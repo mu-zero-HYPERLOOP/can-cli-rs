@@ -96,6 +96,8 @@ $ rustup target add {PI_ARCH}"
             .arg("build")
             .arg("--release")
             .arg(&format!("--target={PI_ARCH}"))
+            .arg("--features")
+            .arg("socket-can")
             .current_dir(&canzero_cli_path)
             .spawn()
             .unwrap()
@@ -112,13 +114,15 @@ $ rustup target add {PI_ARCH}"
             };
             nd.server_addr
         };
-        let mut config_files = can_yaml_config_rs::parse_yaml_config_files_from_file(config_path.to_str().unwrap()).unwrap();
+        let mut config_files =
+            can_yaml_config_rs::parse_yaml_config_files_from_file(config_path.to_str().unwrap())
+                .unwrap();
         config_files.push(config_path.clone());
-        let config_dir = common_path::common_path_all(config_files.iter().map(|p| p.as_path())).expect("Failed to find common network-config directory");
+        let config_dir = common_path::common_path_all(config_files.iter().map(|p| p.as_path()))
+            .expect("Failed to find common network-config directory");
 
         // assumes that the main config file is the the common directory
-        let relative_config_path = config_path.file_name().unwrap().to_str().unwrap(); 
-
+        let relative_config_path = config_path.file_name().unwrap().to_str().unwrap();
 
         std::process::Command::new("ssh")
             .arg("-i")
@@ -129,7 +133,6 @@ $ rustup target add {PI_ARCH}"
             .unwrap()
             .wait()
             .unwrap();
-        
 
         // copy network config
         std::process::Command::new("ssh")
@@ -147,9 +150,7 @@ $ rustup target add {PI_ARCH}"
             .arg("~/.ssh/mu-zero")
             .arg("-r")
             .arg(config_dir)
-            .arg(&format!(
-                "pi@{ip_addr:?}:/home/pi/.canzero/network-config"
-            ))
+            .arg(&format!("pi@{ip_addr:?}:/home/pi/.canzero/network-config"))
             .spawn()
             .unwrap()
             .wait()
@@ -175,7 +176,6 @@ $ rustup target add {PI_ARCH}"
             .wait()
             .unwrap();
 
-
         println!("Set config path on pi@{ip_addr:?} to /home/pi/.canzero/network-config/{relative_config_path}");
         std::process::Command::new("ssh")
             .arg("-i")
@@ -184,7 +184,9 @@ $ rustup target add {PI_ARCH}"
             .arg("sudo /home/pi/.canzero/canzero")
             .arg("config")
             .arg("set-path")
-            .arg(&format!("/home/pi/.canzero/network-config/{relative_config_path}"))
+            .arg(&format!(
+                "/home/pi/.canzero/network-config/{relative_config_path}"
+            ))
             .spawn()
             .unwrap()
             .wait()
@@ -222,15 +224,16 @@ $ rustup target add {PI_ARCH}"
     Ok(())
 }
 
-pub fn command_update_self() -> Result<()> {
-    std::process::Command::new("cargo")
+pub fn command_update_self(socketcan: bool) -> Result<()> {
+    let mut command = std::process::Command::new("cargo");
+    command
         .arg("install")
         .arg("--git")
-        .arg("https://github.com/mu-zero-HYPERLOOP/can-cli-rs")
-        .spawn()
-        .unwrap()
-        .wait()
-        .unwrap();
+        .arg("https://github.com/mu-zero-HYPERLOOP/can-cli-rs");
+    if socketcan {
+        command.arg("--features").arg("socket-can");
+    }
+    command.spawn().unwrap().wait().unwrap();
 
     Ok(())
 }
