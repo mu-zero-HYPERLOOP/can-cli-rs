@@ -1,4 +1,4 @@
-use std::{net::IpAddr, os::unix::process::CommandExt, str::FromStr};
+use std::{net::IpAddr, str::FromStr};
 
 use can_appdata::AppData;
 
@@ -200,7 +200,7 @@ $ rustup target add {PI_ARCH}"
                 .arg(format!("pi@{ip_addr:?}"))
                 .arg("sudo")
                 .arg("reboot")
-                .exec();
+                .spawn().unwrap().wait().unwrap();
         } else if restart {
             println!("Restarting server");
             std::process::Command::new("ssh")

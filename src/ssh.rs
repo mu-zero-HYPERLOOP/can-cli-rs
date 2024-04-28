@@ -1,4 +1,4 @@
-use std::{net::IpAddr, os::unix::process::CommandExt, path::PathBuf, str::FromStr};
+use std::{net::IpAddr, path::PathBuf, str::FromStr};
 
 use can_tcp_bridge_rs::frame::NetworkDescription;
 use serde_yaml::from_str;
@@ -65,7 +65,7 @@ pub async fn command_ssh(host: Option<String>) -> Result<()> {
         .arg("-i")
         .arg("~/.ssh/mu-zero")
         .arg(format!("pi@{ip_addr:?}"))
-        .exec();
+        .spawn().unwrap().wait().unwrap();
 
     Ok(())
 }
@@ -86,7 +86,7 @@ pub async fn command_ssh_reboot(host: Option<String>) -> Result<()> {
         .arg(format!("pi@{ip_addr:?}"))
         .arg("sudo")
         .arg("reboot")
-        .exec();
+        .spawn().unwrap().wait().unwrap();
 
     Ok(())
 }
