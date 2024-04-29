@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, hash::{DefaultHasher, Hasher}, path::PathBuf, sync::Arc};
+use std::{cmp::Ordering, hash::{DefaultHasher, Hash, Hasher}, path::PathBuf, sync::Arc};
 
 use can_appdata::AppData;
 
@@ -143,3 +143,20 @@ pub fn command_config_check() -> Result<()> {
     Ok(())
 }
 
+
+pub fn command_config_hash() -> Result<()> {
+    let appdata = AppData::read()?;
+    match appdata.get_config_path() {
+        Some(path) => println!("{path:?}"),
+        None => println!("No path to config specificied"),
+    }
+    let Some(config_path) = appdata.get_config_path() else {
+        return Err(Error::NoConfigSelected);
+    };
+    let network = can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
+    let mut hasher = DefaultHasher::new();
+    network.hash(&mut hasher);
+
+    println!("{}", hasher.finish());
+    Ok(())
+}

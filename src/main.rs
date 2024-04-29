@@ -1,10 +1,10 @@
 use std::{path::PathBuf, str::FromStr};
 
 use can_config_rs::config::MessageId;
-use clap::ArgAction;
+use clap::{ArgAction, Subcommand};
 use config::{
-    command_config_check, command_config_get, command_config_messages_hash, command_config_set,
-    command_conifg_messages_list,
+    command_config_check, command_config_get, command_config_hash, command_config_messages_hash,
+    command_config_set, command_conifg_messages_list,
 };
 use dump::command_dump;
 use generate::command_generate;
@@ -12,6 +12,7 @@ use get::command_get_server_log;
 use scan::command_scan;
 
 use ssh::{command_restart, command_scp, command_ssh, command_ssh_reboot};
+use status::command_status;
 use update::{command_update_self, command_update_server};
 
 use crate::{client::command_client, server::command_server};
@@ -25,6 +26,7 @@ mod get;
 mod scan;
 mod server;
 mod ssh;
+mod status;
 mod update;
 
 fn cli() -> clap::Command {
@@ -52,7 +54,8 @@ fn cli() -> clap::Command {
                             .arg(clap::Arg::new("bus").short('b').long("bus"))
                         )
                         .subcommand(clap::Command::new("hash"))
-                ).subcommand(clap::Command::new("check")),
+                ).subcommand(clap::Command::new("check"))
+                .subcommand(clap::Command::new("hash"))
         )
         .subcommand(
             clap::Command::new("generate")
@@ -120,6 +123,7 @@ fn cli() -> clap::Command {
                     .arg(clap::Arg::new("msg").short('m').long("message"))
                     .arg(clap::Arg::new("id").long("id"))
             )
+        .subcommand(clap::Command::new("status"))
 }
 
 #[tokio::main]
@@ -142,6 +146,7 @@ async fn main() {
                 _ => unreachable!(),
             },
             Some(("check", _)) => command_config_check(),
+            Some(("hash", _)) => command_config_hash(),
 
             _ => unreachable!(),
         },
@@ -271,10 +276,15 @@ async fn main() {
         Some(("dump", args)) => {
             let msg: Option<&String> = args.get_one("msg");
             let msg_filter = msg.map(|m| vec![m.to_owned()]);
-            let id : Option<&String> = args.get_one("id");
-            let id_filter = id.map(|id| vec![MessageId::StandardId(u32::from_str_radix(id, 16).expect("specify id as hex string \"07F\""))]);
+            let id: Option<&String> = args.get_one("id");
+            let id_filter = id.map(|id| {
+                vec![MessageId::StandardId(
+                    u32::from_str_radix(id, 16).expect("specify id as hex string \"07F\""),
+                )]
+            });
             command_dump(msg_filter, id_filter).await
         }
+        Some(("status", _)) => command_status().await,
         _ => unreachable!(),
     };
     match result {
