@@ -70,13 +70,10 @@ pub async fn rx_get_resp_hash_code(
             let client_id = (data & (0xFFu64 << 16)).overflowing_shr(16).0 as u8;
             let server_id = (data & (0xFFu64 << 24)).overflowing_shr(24).0 as u8;
 
-            println!("received get_resp with client={client_id}, server={server_id} parsed from {data:X}");
             if client_id != 0xFFu8 {
-                println!("dropped received get_resp for client = {}", client_id);
                 continue;
             }
             if server_id != node_id {
-                println!("dropped received get_resp for server = {server_id}");
                 continue;
             }
             if rx_count == 0 {
@@ -126,7 +123,6 @@ pub async fn command_status() -> Result<()> {
     let get_req_bus_id = network_config.get_req_message().bus().id();
 
     for node in network_config.nodes() {
-        println!("checking {} [{}]", node.name(), node.id());
         let config_hash_oe = node
             .object_entries()
             .iter()
@@ -142,6 +138,7 @@ pub async fn command_status() -> Result<()> {
         // spawn receiver
         let rxcan = tcpcan.clone();
 
+        let send_time = Instant::now();
         tcpcan
             .send(&TNetworkFrame::new(
                 timebase,
@@ -154,7 +151,7 @@ pub async fn command_status() -> Result<()> {
             .unwrap();
 
         if let Ok(hash) = tokio::time::timeout(
-            Duration::from_secs(1),
+            Duration::from_millis(100),
             rx_get_resp_hash_code(
                 rxcan,
                 network_config.get_resp_message().id().as_u32(),
@@ -164,9 +161,14 @@ pub async fn command_status() -> Result<()> {
         )
         .await
         {
-            println!("{} : hash = {hash}", node.name());
+            let rx_time = Instant::now().duration_since(send_time);
+            if hash == network_hash {
+                println!("{:25} : \x1b[0;32m {:7}\x1b[0m ({}ms)", node.name(), "ONLINE", rx_time.as_millis());
+            }else {
+                println!("{:25} : \x1b[0;32m {:7}\x1b[0m ({}ms)", node.name(), "DESYNC", rx_time.as_millis());
+            }
         }else {
-            eprintln!("{} offline", node.name());
+            println!("{:25} : \x1b[0;31m {:7}\x1b[0m", node.name(), "OFFLINE");
         }
     }
 
