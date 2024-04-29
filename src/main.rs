@@ -1,10 +1,12 @@
 use std::{path::PathBuf, str::FromStr};
 
+use can_config_rs::config::MessageId;
 use clap::ArgAction;
 use config::{
     command_config_check, command_config_get, command_config_messages_hash, command_config_set,
     command_conifg_messages_list,
 };
+use dump::command_dump;
 use generate::command_generate;
 use get::command_get_server_log;
 use scan::command_scan;
@@ -16,6 +18,7 @@ use crate::{client::command_client, server::command_server};
 
 mod client;
 mod config;
+mod dump;
 mod errors;
 mod generate;
 mod get;
@@ -112,6 +115,11 @@ fn cli() -> clap::Command {
         )
         .subcommand(clap::Command::new("get")
             .subcommand(clap::Command::new("server-log").arg(clap::Arg::new("host").long("host").alias("hostname"))))
+        .subcommand(clap::Command::new("dump")
+                    .arg(clap::Arg::new("raw").short('r').long("raw").action(ArgAction::SetTrue))
+                    .arg(clap::Arg::new("msg").short('m').long("message"))
+                    .arg(clap::Arg::new("id").long("id"))
+            )
 }
 
 #[tokio::main]
@@ -158,7 +166,7 @@ async fn main() {
                 Ok(())
             }
             Some(("self", args)) => {
-                let socketcan : bool = args.get_one("socketcan").cloned().unwrap_or(false);
+                let socketcan: bool = args.get_one("socketcan").cloned().unwrap_or(false);
                 command_update_self(socketcan)
             }
             _ => unreachable!(),
@@ -259,6 +267,13 @@ async fn main() {
                 .unwrap();
             }
             Ok(())
+        }
+        Some(("dump", args)) => {
+            let msg: Option<&String> = args.get_one("msg");
+            let msg_filter = msg.map(|m| vec![m.to_owned()]);
+            let id : Option<&String> = args.get_one("id");
+            let id_filter = id.map(|id| vec![MessageId::StandardId(u32::from_str_radix(id, 16).expect("specify id as hex string \"07F\""))]);
+            command_dump(msg_filter, id_filter).await
         }
         _ => unreachable!(),
     };

@@ -18,6 +18,7 @@ pub enum Error {
     InvalidResponse,
     InvalidNodeName(String),
     InvalidBusName(String),
+    NoServerFound,
 }
 
 impl From<AppDataError> for Error {
@@ -58,6 +59,7 @@ impl Display for Error {
             Error::InvalidResponse => write!(f, "Invalid Response"),
             Error::InvalidNodeName(node_name) => write!(f, "Invalid node name : {node_name}"),
             Error::InvalidBusName(bus_name) => write!(f, "Invalid bus name : {bus_name}"),
+            Error::NoServerFound => write!(f, "No server found"),
         }
     }
 }
