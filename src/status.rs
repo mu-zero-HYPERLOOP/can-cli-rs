@@ -6,7 +6,10 @@ use std::{
 };
 
 use can_appdata::AppData;
-use can_tcp_bridge_rs::frame::{NetworkDescription, TNetworkFrame};
+use can_tcp_bridge_rs::{
+    frame::{NetworkDescription, TNetworkFrame},
+    tcpcan::TcpCan,
+};
 use canzero_common::CanFrame;
 use serde_yaml::from_str;
 
@@ -50,6 +53,44 @@ pub async fn discover() -> Result<NetworkDescription> {
         };
     }
 }
+
+pub async fn rx_get_resp_hash_code(
+    tcpcan: Arc<TcpCan>,
+    resp_id: u32,
+    resp_ide: bool,
+    node_id: u8,
+) -> u64 {
+    let mut hash: u64 = 0;
+    let mut rx_count = 0;
+    loop {
+        let tnf = tcpcan.recv().await;
+        let can_frame = tnf.unwrap().value.can_frame;
+        if can_frame.get_id() == resp_id && can_frame.get_ide_flag() == resp_ide {
+            let data = can_frame.get_data_u64();
+            let client_id = (data & (0xFFu64 << 16)).overflowing_shr(16).0 as u8;
+            let server_id = (data & (0xFFu64 << 24)).overflowing_shr(24).0 as u8;
+
+            println!("received get_resp with client={client_id}, server={server_id} parsed from {data:X}");
+            if client_id != 0xFFu8 {
+                println!("dropped received get_resp for client = {}", client_id);
+                continue;
+            }
+            if server_id != node_id {
+                println!("dropped received get_resp for server = {server_id}");
+                continue;
+            }
+            if rx_count == 0 {
+                hash |= data.overflowing_shr(32).0;
+                rx_count = 1;
+            } else if rx_count == 1 {
+                hash |= data & (0xFFFFFFFFu64 << 32);
+                break;
+            }
+        }
+    }
+    return hash;
+}
+
 pub async fn command_status() -> Result<()> {
     let appdata = AppData::read()?;
     match appdata.get_config_path() {
@@ -63,7 +104,7 @@ pub async fn command_status() -> Result<()> {
         can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
     let mut hasher = DefaultHasher::new();
     network_config.hash(&mut hasher);
-    let hash = hasher.finish();
+    let network_hash = hasher.finish();
 
     let now = Instant::now();
     let network = discover().await?;
@@ -76,67 +117,57 @@ pub async fn command_status() -> Result<()> {
 
     let tcpcan = Arc::new(can_tcp_bridge_rs::tcpcan::TcpCan::new(stream));
 
-    let get_resp = network_config.get_resp_message();
-
-    let (resp_id, resp_ide) = match get_resp.id() {
-        can_config_rs::config::MessageId::StandardId(id) => (id, false),
-        can_config_rs::config::MessageId::ExtendedId(id) => (id, false),
-    };
-    let get_req_bus_id = network_config.get_req_message().bus().id();
     let get_req = network_config.get_req_message();
 
+    let (req_id, req_ide) = match get_req.id() {
+        can_config_rs::config::MessageId::StandardId(id) => (id, false),
+        can_config_rs::config::MessageId::ExtendedId(id) => (id, true),
+    };
+    let get_req_bus_id = network_config.get_req_message().bus().id();
+
     for node in network_config.nodes() {
+        println!("checking {} [{}]", node.name(), node.id());
         let config_hash_oe = node
             .object_entries()
             .iter()
             .find(|oe| oe.name() == "config_hash")
             .unwrap();
-        let mut resp_data: u64 = 0;
-        resp_data |= config_hash_oe.id() as u64;
-        resp_data |= 0xFF << 13;
-        resp_data |= (node.id() as u64) << (13 + 8);
+        let mut req_data: u64 = 0;
+        req_data |= config_hash_oe.id() as u64;
+        req_data |= 0xFF << 13;
+        req_data |= (node.id() as u64) << (13 + 8);
 
-        let get_resp_frame = CanFrame::new(*resp_id, resp_ide, false, get_resp.dlc(), resp_data);
+
+        let get_req_frame = CanFrame::new(*req_id, req_ide, false, get_req.dlc(), req_data);
         // spawn receiver
         let rxcan = tcpcan.clone();
 
-        let send_time = Instant::now();
         tcpcan
             .send(&TNetworkFrame::new(
                 timebase,
                 can_tcp_bridge_rs::frame::NetworkFrame {
                     bus_id: get_req_bus_id,
-                    can_frame: get_resp_frame,
+                    can_frame: get_req_frame,
                 },
             ))
             .await
             .unwrap();
 
-        let mut hash: u64 = 0;
-        let mut rx_count = 0;
-        loop {
-            let tnf = rxcan.recv().await.unwrap();
-            let can_frame = tnf.value.can_frame;
-            if can_frame.get_id() == *resp_id && can_frame.get_ide_flag() == resp_ide {
-                let data = can_frame.get_data_u64();
-                let client_id = (data & (0xFFu64 << 16)).overflowing_shr(16).0 as u8;
-                if client_id != 0xFFu8 {
-                    continue;
-                }
-                let server_id = (data & (0xFFu64 << 24)).overflowing_shr(24).0 as u8;
-                if server_id != node.id() {
-                    continue;
-                }
-                if rx_count == 0 {
-                    hash |= data.overflowing_shr(32).0;
-                    rx_count = 1;
-                } else if rx_count == 1 {
-                    hash |= data & (0xFFFFFFFFu64 << 32);
-                    break;
-                }
-            }
+        if let Ok(hash) = tokio::time::timeout(
+            Duration::from_secs(1),
+            rx_get_resp_hash_code(
+                rxcan,
+                network_config.get_resp_message().id().as_u32(),
+                network_config.get_resp_message().id().ide(),
+                node.id(),
+            ),
+        )
+        .await
+        {
+            println!("{} : hash = {hash}", node.name());
+        }else {
+            eprintln!("{} offline", node.name());
         }
-        println!("{} : hash = {hash}", node.name());
     }
 
     Ok(())
