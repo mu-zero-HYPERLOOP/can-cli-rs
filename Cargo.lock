@@ -162,7 +162,7 @@ dependencies = [
 [[package]]
 name = "can-c-codegen-rs"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git#efba96b6bc5bb2c60ff27f2aef705a6623329b1e"
+source = "git+https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git#0a94cabe08fc103f9967492c2286fd872fa2ae6d"
 dependencies = [
  "can-config-rs",
 ]
@@ -170,7 +170,7 @@ dependencies = [
 [[package]]
 name = "can-config-rs"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/can-config-rs.git#70750d1e7187e338ab0781a5bced966a891b9ae6"
+source = "git+https://github.com/mu-zero-HYPERLOOP/can-config-rs.git#e3c9af4ff32a9f07b7e497b6879421b5057ba7a5"
 dependencies = [
  "bit_reverse",
  "can-dbc",
