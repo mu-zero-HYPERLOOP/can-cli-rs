@@ -14,7 +14,7 @@ const PI_ARCH: &'static str = "armv7-unknown-linux-gnueabihf";
 const CANZERO_CLI_BIN_NAME: &'static str = "canzero";
 
 pub async fn command_update_server(
-    host: Option<&String>,
+    host: Option<String>,
     reboot: bool,
     restart: bool,
     build: bool,
@@ -107,7 +107,7 @@ $ rustup target add {PI_ARCH}"
         };
     } else {
         let ip_addr = if let Some(host) = host {
-            IpAddr::from_str(host).expect("Not a ip address!")
+            IpAddr::from_str(&host).expect("Not a ip address!")
         } else {
             let Some(nd) = scan_ssh().await? else {
                 return Ok(());

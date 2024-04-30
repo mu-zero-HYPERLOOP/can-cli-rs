@@ -19,6 +19,7 @@ pub enum Error {
     InvalidNodeName(String),
     InvalidBusName(String),
     NoServerFound,
+    NotYetImplemented,
 }
 
 impl From<AppDataError> for Error {
@@ -60,6 +61,7 @@ impl Display for Error {
             Error::InvalidNodeName(node_name) => write!(f, "Invalid node name : {node_name}"),
             Error::InvalidBusName(bus_name) => write!(f, "Invalid bus name : {bus_name}"),
             Error::NoServerFound => write!(f, "No server found"),
+            Error::NotYetImplemented => write!(f, "Not yet implemented"),
         }
     }
 }

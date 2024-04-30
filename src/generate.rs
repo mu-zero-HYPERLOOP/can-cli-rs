@@ -14,7 +14,7 @@ fn rec_create_dir(dir : &Path) -> Result<()>{
     Ok(())
 }
 
-pub fn command_generate(node_name : &str, output_dir : &str) -> Result<()> {
+pub fn command_generate(node_name : &str, output_dir : &PathBuf) -> Result<()> {
     let appdata = AppData::read()?;
     let Some(config_path) = appdata.get_config_path() else {
         eprintln!("No path to config was set");
@@ -25,8 +25,10 @@ pub fn command_generate(node_name : &str, output_dir : &str) -> Result<()> {
             .to_str()
             .expect("Fuck you for using non utf8 file names"),
     )?;
-    let output_dir = PathBuf::from_str(output_dir)
-        .map_err(|_| Error::FileNotFound(output_dir.to_string()))?;
+    let output_dir = output_dir.clone();
+    if output_dir.exists() {
+        return Err(Error::FileNotFound(output_dir.to_str().unwrap().to_owned()));
+    }
     
     rec_create_dir(&output_dir)?;
 

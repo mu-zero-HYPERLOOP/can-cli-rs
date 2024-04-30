@@ -4,6 +4,19 @@ use can_appdata::AppData;
 
 use crate::errors::{Error, Result};
 
+
+pub fn command_config_show() -> Result<()> {
+    Err(Error::NotYetImplemented)
+}
+
+pub fn command_config_nodes_list() -> Result<()> {
+    Err(Error::NotYetImplemented)
+}
+
+pub fn command_config_object_entries_list(node : String) -> Result<()> { 
+    Err(Error::NotYetImplemented)
+}
+
 pub fn command_config_set(path: PathBuf) -> Result<()> {
     let mut appdata = AppData::read()?;
     appdata.set_config_path(Some(path))?;
@@ -19,7 +32,7 @@ pub fn command_config_get() -> Result<()> {
     Ok(())
 }
 
-pub fn command_conifg_messages_list(node: Option<String>, bus: Option<String>) -> Result<()> {
+pub fn command_config_messages_list(node: Option<String>, bus: Option<String>) -> Result<()> {
     let appdata = AppData::read()?;
     match appdata.get_config_path() {
         Some(path) => println!("{path:?}"),

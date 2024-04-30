@@ -46,7 +46,11 @@ pub async fn discover() -> Result<NetworkDescription> {
     }
 }
 
-pub async fn command_dump(filter_msg_names: Option<Vec<String>>, filter_ids : Option<Vec<MessageId>>) -> Result<()> {
+pub async fn command_dump(filter_msg_names: Vec<String>, filter_ids : Vec<String>) -> Result<()> {
+    if !filter_ids.is_empty() {
+        return Err(Error::NotYetImplemented);
+    }
+    let filter_ids : Vec<MessageId> = vec![];
     let appdata = AppData::read()?;
     match appdata.get_config_path() {
         Some(path) => println!("{path:?}"),
@@ -91,12 +95,12 @@ pub async fn command_dump(filter_msg_names: Option<Vec<String>>, filter_ids : Op
             .iter()
             .find(|m| m.id() == &id)
             .map_or("???", |m| m.name());
-        let pass = if let Some(filter_msg_names) = &filter_msg_names {
+        let pass = if !filter_msg_names.is_empty() {
             filter_msg_names.iter().any(|msg| msg == msg_name)
         } else {
             true
         };
-        let pass = pass || if let Some(filter_ids) = &filter_ids {
+        let pass = pass || if !filter_ids.is_empty() {
             filter_ids.iter().any(|x| x == &id)
         }else {
             false

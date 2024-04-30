@@ -151,7 +151,7 @@ pub async fn command_status() -> Result<()> {
             .unwrap();
 
         if let Ok(hash) = tokio::time::timeout(
-            Duration::from_millis(100),
+            Duration::from_millis(250),
             rx_get_resp_hash_code(
                 rxcan,
                 network_config.get_resp_message().id().as_u32(),
@@ -165,7 +165,7 @@ pub async fn command_status() -> Result<()> {
             if hash == network_hash {
                 println!("{:25} : \x1b[0;32m {:7}\x1b[0m ({}ms)", node.name(), "ONLINE", rx_time.as_millis());
             }else {
-                println!("{:25} : \x1b[0;32m {:7}\x1b[0m ({}ms)", node.name(), "DESYNC", rx_time.as_millis());
+                println!("{:25} : \x1b[0;33m {:7}\x1b[0m ({}ms)", node.name(), "DESYNC", rx_time.as_millis());
             }
         }else {
             println!("{:25} : \x1b[0;31m {:7}\x1b[0m", node.name(), "OFFLINE");
