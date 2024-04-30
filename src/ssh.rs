@@ -21,6 +21,9 @@ pub async fn scan_ssh() -> Result<Option<NetworkDescription>> {
             println!("No connections found");
             return Ok(None);
         }
+        if connections.len() == 1 {
+            return Ok(Some(connections.first().unwrap().clone()));
+        }
         println!("Found TCP servers at:");
         for (i, nd) in connections.iter().enumerate() {
             println!(

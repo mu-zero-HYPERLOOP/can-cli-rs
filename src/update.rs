@@ -183,7 +183,7 @@ $ rustup target add {PI_ARCH}"
             .arg(format!("pi@{ip_addr:?}"))
             .arg("sudo /home/pi/.canzero/canzero")
             .arg("config")
-            .arg("set-path")
+            .arg("set")
             .arg(&format!(
                 "/home/pi/.canzero/network-config/{relative_config_path}"
             ))
@@ -216,7 +216,7 @@ $ rustup target add {PI_ARCH}"
             .arg("-i")
             .arg("~/.ssh/mu-zero")
             .arg(format!("pi@{ip_addr:?}"))
-            .arg("sudo /home/pi/.canzero/canzero run server >> /home/pi/.canzero/canzero-server.log 2>&1 &")
+            .arg("sudo /home/pi/.canzero/canzero server start >> /home/pi/.canzero/canzero-server.log 2>&1 &")
             .spawn().unwrap().wait().unwrap();
         }
     }
