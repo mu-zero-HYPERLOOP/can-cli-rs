@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use can_config_rs::config::command;
 use clap::{Parser, Subcommand};
+use config::command_config_get;
 
 use crate::{
     client::command_client,
@@ -109,6 +110,7 @@ enum ConfigCommand {
         arg_required_else_help = false
     )]
     Check,
+    Where,
 }
 
 #[derive(Subcommand, Debug)]
@@ -164,6 +166,7 @@ async fn main() {
                     None => command_config_show(),
                 },
                 ConfigCommand::Check => command_config_check(),
+                ConfigCommand::Where => command_config_get(),
             },
             Command::Generate {
                 node_name,
