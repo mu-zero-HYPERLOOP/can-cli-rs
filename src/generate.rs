@@ -26,7 +26,7 @@ pub fn command_generate(node_name : &str, output_dir : &PathBuf) -> Result<()> {
             .expect("Fuck you for using non utf8 file names"),
     )?;
     let output_dir = output_dir.clone();
-    if output_dir.exists() {
+    if !output_dir.exists() {
         return Err(Error::FileNotFound(output_dir.to_str().unwrap().to_owned()));
     }
     

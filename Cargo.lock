@@ -162,7 +162,7 @@ dependencies = [
 [[package]]
 name = "can-c-codegen-rs"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git#2ae18339e887ef7b7afbc516501cab021cf2b7d0"
+source = "git+https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git#a0c173e7408b63e4befeb010b27a7f47abff3346"
 dependencies = [
  "can-config-rs",
 ]
@@ -170,7 +170,7 @@ dependencies = [
 [[package]]
 name = "can-config-rs"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/can-config-rs.git#e3c9af4ff32a9f07b7e497b6879421b5057ba7a5"
+source = "git+https://github.com/mu-zero-HYPERLOOP/can-config-rs.git#0c24e482f4b550c061082e565f791acc0ef4dd60"
 dependencies = [
  "bit_reverse",
  "can-dbc",
@@ -221,7 +221,7 @@ dependencies = [
 [[package]]
 name = "can-yaml-config-rs"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/can-yaml-config-rs.git#2ee00d2a58117d5ff4d0fc6d5c134a7bf68bc550"
+source = "git+https://github.com/mu-zero-HYPERLOOP/can-yaml-config-rs.git#0aaffc1a10714aa8c389c3eabec7a74c59be96d8"
 dependencies = [
  "can-config-rs",
  "regex",
@@ -256,9 +256,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.0.95"
+version = "1.0.96"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d32a725bc159af97c3e629873bb9f88fb8cf8a4867175f76dc987815ea07c83b"
+checksum = "065a29261d53ba54260972629f9ca6bffa69bac13cd1fed61420f7fa68b9f8bd"
 
 [[package]]
 name = "cfg-if"
@@ -606,9 +606,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.153"
+version = "0.2.154"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c198f91728a82281a64e1f4f9eeb25d82cb32a5de251c6bd1b5154d63a8e7bd"
+checksum = "ae743338b92ff9146ce83992f766a31066a91a8c84a45e0e9f21e7cf6de6d346"
 
 [[package]]
 name = "libredox"
