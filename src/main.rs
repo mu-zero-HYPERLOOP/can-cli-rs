@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use can_config_rs::config::command;
 use clap::{Parser, Subcommand};
 use config::command_config_get;
 
@@ -175,7 +174,7 @@ async fn main() {
             Command::Gui => Err(Error::NotYetImplemented),
             Command::Server { command } => match command {
                 ServerCommand::Start => command_server().await,
-                ServerCommand::Scan => command_scan(true).await,
+                ServerCommand::Scan => command_scan().await,
                 ServerCommand::Restart => Err(Error::NotYetImplemented),
                 ServerCommand::Reboot => command_ssh_reboot(None).await,
                 ServerCommand::Ssh { host } => command_ssh(host).await,
