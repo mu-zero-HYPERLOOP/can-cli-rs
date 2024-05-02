@@ -1,9 +1,14 @@
-use std::{cmp::Ordering, hash::{DefaultHasher, Hash, Hasher}, path::PathBuf, sync::Arc};
+use std::{
+    cmp::Ordering,
+    hash::{DefaultHasher, Hash, Hasher},
+    path::PathBuf,
+    sync::Arc,
+};
 
 use can_appdata::AppData;
+use can_config_rs::config::Type;
 
 use crate::errors::{Error, Result};
-
 
 pub fn command_config_show() -> Result<()> {
     Err(Error::NotYetImplemented)
@@ -13,7 +18,56 @@ pub fn command_config_nodes_list() -> Result<()> {
     Err(Error::NotYetImplemented)
 }
 
-pub fn command_config_object_entries_list(node : String) -> Result<()> { 
+pub fn command_config_object_entries_list(node: String) -> Result<()> {
+    let appdata = AppData::read()?;
+    match appdata.get_config_path() {
+        Some(path) => println!("{path:?}"),
+        None => println!("No path to config specificied"),
+    }
+    let Some(config_path) = appdata.get_config_path() else {
+        return Err(Error::NoConfigSelected);
+    };
+    let network = can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
+    let Some(node) = network.nodes().iter().find(|n| n.name() == node) else {
+        return Err(Error::InvalidNodeName(node));
+    };
+    for oe in node.object_entries() {
+        fn ty_to_name(ty: &Type) -> String {
+            match ty {
+                can_config_rs::config::Type::Primitive(prim) => match prim {
+                    can_config_rs::config::SignalType::UnsignedInt { size } => format!("u{size}"),
+                    can_config_rs::config::SignalType::SignedInt { size } => format!("i{size}"),
+                    can_config_rs::config::SignalType::Decimal {
+                        size,
+                        offset,
+                        scale,
+                    } => {
+                        let min = *offset;
+                        let max = (2u128.pow(*size as u32) as f64 / *scale) + min;
+                        format!("d{size}<{min}..{max}> (scale = {scale})")
+                    }
+                },
+                can_config_rs::config::Type::Struct {
+                    name,
+                    description: _,
+                    attribs: _,
+                    visibility: _,
+                } => format!("{name}"),
+                can_config_rs::config::Type::Enum {
+                    name,
+                    description: _,
+                    size: _,
+                    entries: _,
+                    visibility: _,
+                } => format!("{name}"),
+                can_config_rs::config::Type::Array { len, ty } => {
+                    format!("{}[{len}", ty_to_name(ty))
+                }
+            }
+        }
+        println!("[{}] = {} : {}", oe.id(), oe.name(), ty_to_name(oe.ty()));
+    }
+
     Err(Error::NotYetImplemented)
 }
 
@@ -45,7 +99,7 @@ pub fn command_config_messages_list(node: Option<String>, bus: Option<String>) -
 
     if let Some(bus_name) = &bus {
         if !network.buses().iter().any(|b| b.name() == bus_name) {
-            return Err(Error::InvalidBusName(bus_name.clone()))
+            return Err(Error::InvalidBusName(bus_name.clone()));
         }
     };
 
@@ -90,7 +144,8 @@ pub fn command_config_messages_list(node: Option<String>, bus: Option<String>) -
         }
     } else {
         let messages = match &bus {
-            Some(bus_name) => network.messages()
+            Some(bus_name) => network
+                .messages()
                 .iter()
                 .filter(|m| m.bus().name() == bus_name)
                 .map(Arc::clone)
@@ -112,7 +167,6 @@ pub fn command_config_messages_list(node: Option<String>, bus: Option<String>) -
 }
 
 pub fn command_config_messages_hash() -> Result<()> {
-
     let appdata = AppData::read()?;
     match appdata.get_config_path() {
         Some(path) => println!("{path:?}"),
@@ -123,11 +177,11 @@ pub fn command_config_messages_hash() -> Result<()> {
     };
     let network = can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
     let mut messages = network.messages().clone();
-    messages.sort_by(|a,b| {
+    messages.sort_by(|a, b| {
         let no = a.name().cmp(b.name());
         if no == Ordering::Equal {
             a.bus().name().cmp(b.bus().name())
-        }else {
+        } else {
             no
         }
     });
@@ -139,7 +193,6 @@ pub fn command_config_messages_hash() -> Result<()> {
     let hash = hash.finish();
     println!("{hash:X}");
 
-    
     Ok(())
 }
 
@@ -155,7 +208,6 @@ pub fn command_config_check() -> Result<()> {
     can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
     Ok(())
 }
-
 
 pub fn command_config_hash() -> Result<()> {
     let appdata = AppData::read()?;

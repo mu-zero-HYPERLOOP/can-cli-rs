@@ -74,10 +74,10 @@ enum Command {
     #[command(about = "Print the CAN trace to the control.")]
     Dump {
         #[clap(alias = "msg")]
-        #[arg(short, long)]
+        #[arg(short, long, num_args=0..)]
         messages: Vec<String>,
         #[clap(alias = "id")]
-        #[arg(short, long)]
+        #[arg(short, long, num_args=0..)]
         ids: Vec<String>,
     },
     #[command(about = "Check the status of all connected nodes.")]
