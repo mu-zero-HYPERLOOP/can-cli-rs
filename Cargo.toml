@@ -9,11 +9,12 @@ edition = "2021"
 clap = { version = "4.4.7", features = ["derive"] }
 # git2 = { version = "0.18.0", features = ["vendored-libgit2"]}
 dirs = { version = "5.0.0" }
-can-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-config-rs.git"}
-can-c-codegen-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git"}
-can-yaml-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-yaml-config-rs.git" }
-can-appdata = { git = "https://github.com/mu-zero-HYPERLOOP/can-appdata.git" }
-can-tcp-bridge-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-tcp-bridge-rs.git" }
+canzero-config = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-config.git" }
+canzero-codegen = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-codegen.git" }
+canzero-appdata = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-appdata.git" }
+canzero-tcp = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-tcp.git" }
+canzero-udp = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-udp.git" }
+canzero-server = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-server.git" }
 canzero-common = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-common.git" }
 serde = {version = "1.0.193", features=["derive"]}
 serde_yaml = "0.9.27"
@@ -24,4 +25,4 @@ common-path = "1.0.0"
 
 [features]
 default = []
-socket-can = ["can-tcp-bridge-rs/socket-can"]
+socket-can = ["canzero-server/socket-can"]

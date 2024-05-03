@@ -1,6 +1,6 @@
-use std::{net::IpAddr, path::PathBuf, str::FromStr};
+use std::{net::IpAddr, path::PathBuf, str::FromStr, time::Duration};
 
-use can_tcp_bridge_rs::frame::NetworkDescription;
+use canzero_udp::{frame::NetworkDescription, scanner::UdpNetworkScanner};
 use serde_yaml::from_str;
 
 use crate::errors::{Error, Result};
@@ -10,22 +10,33 @@ const SERVICE_NAME: &'static str = "CANzero";
 
 pub async fn scan_ssh() -> Result<Option<NetworkDescription>> {
     loop {
-        let connections = can_tcp_bridge_rs::discovery::udp_discover::start_udp_discover(
-            SERVICE_NAME,
-            BROADCAST_PORT,
-        )
-        .await
-        .unwrap();
+        let scanner = UdpNetworkScanner::create().await?;
 
-        if connections.is_empty() {
+        scanner.start();
+        let mut networks = vec![];
+        loop {
+            match scanner.next_timeout(Duration::from_millis(1000)).await {
+                Some(Ok(network)) => {
+                    networks.push(network);
+                    continue;
+                }
+                Some(Err(_)) => panic!("Failed to discover networks"),
+                None => (),
+            }
+            if !networks.is_empty() {
+                break;
+            }
+        }
+
+        if networks.is_empty() {
             println!("No connections found");
             return Ok(None);
         }
-        if connections.len() == 1 {
-            return Ok(Some(connections.first().unwrap().clone()));
+        if networks.len() == 1 {
+            return Ok(Some(networks.first().unwrap().clone()));
         }
         println!("Found TCP servers at:");
-        for (i, nd) in connections.iter().enumerate() {
+        for (i, nd) in networks.iter().enumerate() {
             println!(
                 "-{} : {} at  {}:{}",
                 i + 1,
@@ -36,7 +47,7 @@ pub async fn scan_ssh() -> Result<Option<NetworkDescription>> {
         }
         println!(
             "Select server {:?} or 'r' to rescan",
-            (1..connections.len())
+            (1..networks.len())
         );
         let mut resp = String::new();
         std::io::stdin().read_line(&mut resp).unwrap();
@@ -46,7 +57,7 @@ pub async fn scan_ssh() -> Result<Option<NetworkDescription>> {
             let Ok(con_index) = from_str::<usize>(&resp) else {
                 return Err(Error::InvalidResponse);
             };
-            let Some(con) = connections.get(con_index.saturating_sub(1)) else {
+            let Some(con) = networks.get(con_index.saturating_sub(1)) else {
                 return Err(Error::InvalidResponse);
             };
             return Ok(Some(con.to_owned()));

@@ -1,6 +1,6 @@
 use std::{net::IpAddr, str::FromStr};
 
-use can_appdata::AppData;
+use canzero_appdata::AppData;
 
 use crate::{
     errors::{Error, Result},
@@ -114,9 +114,7 @@ $ rustup target add {PI_ARCH}"
             };
             nd.server_addr
         };
-        let mut config_files =
-            can_yaml_config_rs::parse_yaml_config_files_from_file(config_path.to_str().unwrap())
-                .unwrap();
+        let mut config_files = appdata.config_files()?;
         config_files.push(config_path.clone());
         let config_dir = common_path::common_path_all(config_files.iter().map(|p| p.as_path()))
             .expect("Failed to find common network-config directory");

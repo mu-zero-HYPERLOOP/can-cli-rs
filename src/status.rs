@@ -5,54 +5,13 @@ use std::{
     time::{Duration, Instant},
 };
 
-use can_appdata::AppData;
-use can_tcp_bridge_rs::{
-    frame::{NetworkDescription, TNetworkFrame},
-    tcpcan::TcpCan,
-};
-use canzero_common::CanFrame;
-use serde_yaml::from_str;
+use canzero_appdata::AppData;
+use canzero_common::{CanFrame, NetworkFrame, TNetworkFrame};
+use canzero_config::config;
+use canzero_tcp::tcpcan::TcpCan;
 
-use crate::errors::{Error, Result};
+use crate::{dump::discover, errors::{Error, Result}};
 
-pub async fn discover() -> Result<NetworkDescription> {
-    loop {
-        let networks =
-            can_tcp_bridge_rs::discovery::udp_discover::start_udp_discover("CANzero", 9002)
-                .await
-                .unwrap();
-        if networks.is_empty() {
-            return Err(Error::NoServerFound);
-        } else if networks.len() == 1 {
-            return Ok(networks.first().unwrap().to_owned());
-        } else {
-            for (i, nd) in networks.iter().enumerate() {
-                println!(
-                    "-{} : {} at  {}:{}",
-                    i + 1,
-                    nd.server_name,
-                    nd.server_addr,
-                    nd.service_port
-                );
-            }
-
-            println!("Select server {:?} or 'r' to rescan", (1..networks.len()));
-            let mut resp = String::new();
-            std::io::stdin().read_line(&mut resp).unwrap();
-            if resp.starts_with("r") {
-                continue;
-            } else {
-                let Ok(con_index) = from_str::<usize>(&resp) else {
-                    return Err(Error::InvalidResponse);
-                };
-                let Some(con) = networks.get(con_index.saturating_sub(1)) else {
-                    return Err(Error::InvalidResponse);
-                };
-                return Ok(con.to_owned());
-            }
-        };
-    }
-}
 
 pub async fn rx_get_resp_hash_code(
     tcpcan: Arc<TcpCan>,
@@ -90,15 +49,7 @@ pub async fn rx_get_resp_hash_code(
 
 pub async fn command_status() -> Result<()> {
     let appdata = AppData::read()?;
-    match appdata.get_config_path() {
-        Some(path) => println!("{path:?}"),
-        None => println!("No path to config specificied"),
-    }
-    let Some(config_path) = appdata.get_config_path() else {
-        return Err(Error::NoConfigSelected);
-    };
-    let network_config =
-        can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
+    let network_config = appdata.config()?;
     let mut hasher = DefaultHasher::new();
     network_config.hash(&mut hasher);
     let network_hash = hasher.finish();
@@ -112,13 +63,13 @@ pub async fn command_status() -> Result<()> {
             .await
             .unwrap();
 
-    let tcpcan = Arc::new(can_tcp_bridge_rs::tcpcan::TcpCan::new(stream));
+    let tcpcan = Arc::new(canzero_tcp::tcpcan::TcpCan::new(stream));
 
     let get_req = network_config.get_req_message();
 
     let (req_id, req_ide) = match get_req.id() {
-        can_config_rs::config::MessageId::StandardId(id) => (id, false),
-        can_config_rs::config::MessageId::ExtendedId(id) => (id, true),
+        config::MessageId::StandardId(id) => (id, false),
+        config::MessageId::ExtendedId(id) => (id, true),
     };
     let get_req_bus_id = network_config.get_req_message().bus().id();
 
@@ -142,7 +93,7 @@ pub async fn command_status() -> Result<()> {
         tcpcan
             .send(&TNetworkFrame::new(
                 timebase,
-                can_tcp_bridge_rs::frame::NetworkFrame {
+                NetworkFrame {
                     bus_id: get_req_bus_id,
                     can_frame: get_req_frame,
                 },
