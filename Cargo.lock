@@ -190,6 +190,7 @@ dependencies = [
  "canzero-common",
  "canzero-config",
  "canzero-server",
+ "canzero-socketcan",
  "canzero-tcp",
  "canzero-udp",
  "clap",
@@ -230,7 +231,7 @@ dependencies = [
 [[package]]
 name = "canzero-server"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-server.git#771f047953c4c8b7c20dce7cec0722ba432ad3a7"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-server.git#838ed6894f4de9824a22a6c92d7d7fcf98f46168"
 dependencies = [
  "bincode",
  "canzero-appdata",
@@ -277,7 +278,7 @@ dependencies = [
 [[package]]
 name = "canzero-udp"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-udp.git#1a0031fe85956bf66fce6782c71ae3f2e79827ae"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-udp.git#02d1c0c4bf830e2a4345ce7c47ab0d5d4c332011"
 dependencies = [
  "bincode",
  "color-print",
@@ -872,9 +873,9 @@ dependencies = [
 
 [[package]]
 name = "num-traits"
-version = "0.2.18"
+version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da0df0e5185db44f69b44f26786fe401b6c293d1907744beaa7fa62b2e5a517a"
+checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
 ]

@@ -16,6 +16,7 @@ canzero-tcp = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-tcp.git" }
 canzero-udp = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-udp.git" }
 canzero-server = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-server.git" }
 canzero-common = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-common.git" }
+canzero-socketcan = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-socketcan.git", optional = true}
 serde = {version = "1.0.193", features=["derive"]}
 serde_yaml = "0.9.27"
 tokio = { version = "1.37.0", features = ["full"] }
@@ -24,5 +25,5 @@ tokio = { version = "1.37.0", features = ["full"] }
 common-path = "1.0.0"
 
 [features]
-default = []
-socket-can = ["canzero-server/socket-can"]
+default = ["socket-can"]
+socket-can = ["canzero-server/socket-can", "dep:canzero-socketcan"]
