@@ -4,14 +4,13 @@ use canzero_udp::scanner::UdpNetworkScanner;
 
 use crate::errors::Result;
 
-const BROADCAST_PORT: u16 = 9002u16;
-const SERVICE_NAME: &'static str = "CANzero";
 
 pub async fn command_scan() -> Result<()> {
     let scanner = UdpNetworkScanner::create().await?;
+    scanner.start();
     let mut networks = vec![];
     loop {
-        match scanner.next_timeout(Duration::from_millis(500)).await {
+        match scanner.next_timeout(Duration::from_millis(1000)).await {
             Some(Ok(network)) => {
                 networks.push(network);
                 continue;
@@ -23,6 +22,7 @@ pub async fn command_scan() -> Result<()> {
             None => break,
         }
     }
+    drop(scanner);
     if networks.is_empty() {
         println!("No connections found");
     } else {
