@@ -84,7 +84,7 @@ enum Command {
     Status,
     #[command(about = "Update CANzero.")]
     Update {
-        #[arg(short, long)]
+        #[arg(short='s', long="socketcan", action = clap::ArgAction::SetTrue)]
         socketcan: bool,
     },
 }

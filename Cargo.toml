@@ -20,10 +20,8 @@ canzero-socketcan = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-socket
 serde = {version = "1.0.193", features=["derive"]}
 serde_yaml = "0.9.27"
 tokio = { version = "1.37.0", features = ["full"] }
-# openssl = { version = "0.10", features = ["vendored"] }
-# ssh2 = { version = "0.9.4", features = ["vendored-openssl"] }
 common-path = "1.0.0"
 
 [features]
-default = ["socket-can"]
+default = []
 socket-can = ["canzero-server/socket-can", "dep:canzero-socketcan"]

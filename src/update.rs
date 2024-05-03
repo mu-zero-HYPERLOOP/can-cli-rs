@@ -229,6 +229,7 @@ pub fn command_update_self(socketcan: bool) -> Result<()> {
         .arg("--git")
         .arg("https://github.com/mu-zero-HYPERLOOP/can-cli-rs");
     if socketcan {
+        println!("Enabling feature socket-can");
         command.arg("--features").arg("socket-can");
     }
     command.spawn().unwrap().wait().unwrap();

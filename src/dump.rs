@@ -3,54 +3,15 @@ use std::{net::SocketAddr, time::Duration};
 use canzero_appdata::AppData;
 use canzero_config::config::MessageId;
 use canzero_udp::{frame::NetworkDescription, scanner::UdpNetworkScanner};
-use serde_yaml::from_str;
 
 use crate::errors::{Error, Result};
 
 pub async fn discover() -> Result<NetworkDescription> {
-    loop {
-        let scanner = UdpNetworkScanner::create().await?;
-
-        scanner.start();
-        let mut networks = vec![];
-        loop {
-            match scanner.next_timeout(Duration::from_millis(1000)).await {
-                Some(Ok(network)) => {
-                    networks.push(network);
-                    continue;
-                }
-                Some(Err(_)) => panic!("Failed to discover networks"),
-                None => (),
-            }
-            if !networks.is_empty() {
-                break;
-            }
-        }
-
-        for (i, nd) in networks.iter().enumerate() {
-            println!(
-                "-{} : {} at  {}:{}",
-                i + 1,
-                nd.server_name,
-                nd.server_addr,
-                nd.service_port
-            );
-        }
-
-        println!("Select server {:?} or 'r' to rescan", (1..networks.len()));
-        let mut resp = String::new();
-        std::io::stdin().read_line(&mut resp).unwrap();
-        if resp.starts_with("r") {
-            continue;
-        } else {
-            let Ok(con_index) = from_str::<usize>(&resp) else {
-                return Err(Error::InvalidResponse);
-            };
-            let Some(con) = networks.get(con_index.saturating_sub(1)) else {
-                return Err(Error::InvalidResponse);
-            };
-            return Ok(con.to_owned());
-        }
+    let scanner = UdpNetworkScanner::create().await?;
+    scanner.start();
+    match scanner.next_timeout(Duration::from_millis(1000)).await {
+        Some(Ok(con)) => Ok(con),
+        _ => Err(Error::NoServerFound),
     }
 }
 
