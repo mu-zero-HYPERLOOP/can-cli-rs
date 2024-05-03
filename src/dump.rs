@@ -3,6 +3,7 @@ use std::{net::SocketAddr, time::Duration};
 use canzero_appdata::AppData;
 use canzero_config::config::MessageId;
 use canzero_udp::{frame::NetworkDescription, scanner::UdpNetworkScanner};
+use color_print::cprintln;
 
 use crate::errors::{Error, Result};
 
@@ -29,6 +30,13 @@ pub async fn command_dump(filter_msg_names: Vec<String>, filter_ids: Vec<String>
         tokio::net::TcpStream::connect(SocketAddr::new(network.server_addr, network.service_port))
             .await
             .unwrap();
+
+    cprintln!(
+        "<green>Successfully connected to {} at {}:{}</green>",
+        network.server_name,
+        network.server_addr,
+        network.service_port
+    );
 
     let tcpcan = canzero_tcp::tcpcan::TcpCan::new(connection);
 

@@ -194,6 +194,7 @@ dependencies = [
  "canzero-tcp",
  "canzero-udp",
  "clap",
+ "color-print",
  "common-path",
  "dirs",
  "serde",

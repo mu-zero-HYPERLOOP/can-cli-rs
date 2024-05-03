@@ -21,6 +21,7 @@ serde = {version = "1.0.193", features=["derive"]}
 serde_yaml = "0.9.27"
 tokio = { version = "1.37.0", features = ["full"] }
 common-path = "1.0.0"
+color-print = "0.3.6"
 
 [features]
 default = []
