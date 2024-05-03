@@ -7,11 +7,11 @@ use crate::{
     ssh::scan_ssh,
 };
 
-const CANZERO_CLI_REPO: &'static str = "https://github.com/mu-zero-HYPERLOOP/can-cli-rs.git";
+const CANZERO_CLI_REPO: &'static str = "https://github.com/mu-zero-HYPERLOOP/canzero-cli.git";
 const CANZERO_CLI_PATH: &'static str = "canzero-cli";
 
 const PI_ARCH: &'static str = "armv7-unknown-linux-gnueabihf";
-const CANZERO_CLI_BIN_NAME: &'static str = "canzero";
+const CANZERO_CLI_BIN_NAME: &'static str = "canzero-cli";
 
 pub async fn command_update_server(
     host: Option<String>,
@@ -168,7 +168,7 @@ $ rustup target add {PI_ARCH}"
             .arg("-i")
             .arg("~/.ssh/mu-zero")
             .arg(canzero_cli_bin_path)
-            .arg(&format!("pi@{ip_addr:?}:/home/pi/.canzero"))
+            .arg(&format!("pi@{ip_addr:?}:/home/pi/.canzero/canzero"))
             .spawn()
             .unwrap()
             .wait()
@@ -227,7 +227,7 @@ pub fn command_update_self(socketcan: bool) -> Result<()> {
     command
         .arg("install")
         .arg("--git")
-        .arg("https://github.com/mu-zero-HYPERLOOP/can-cli-rs");
+        .arg("https://github.com/mu-zero-HYPERLOOP/canzero-cli.git");
     if socketcan {
         println!("Enabling feature socket-can");
         command.arg("--features").arg("socket-can");
