@@ -220,7 +220,7 @@ dependencies = [
 [[package]]
 name = "canzero-codegen"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-codegen.git#2b82664cbf0ae81674fcfc954bd152bdd8da1e14"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-codegen.git#314d637ced33b07fe721247fce22b7a5abfa9c63"
 dependencies = [
  "canzero-config",
 ]
