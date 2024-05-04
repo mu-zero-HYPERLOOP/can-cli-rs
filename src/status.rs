@@ -1,5 +1,4 @@
 use std::{
-    hash::{DefaultHasher, Hash, Hasher},
     net::SocketAddr,
     sync::Arc,
     time::{Duration, Instant},
@@ -14,7 +13,7 @@ use color_print::cprintln;
 
 use crate::{
     dump::discover,
-    errors::{Error, Result},
+    errors::Result,
 };
 
 pub async fn rx_get_resp_hash_code(
@@ -54,9 +53,7 @@ pub async fn rx_get_resp_hash_code(
 pub async fn command_status() -> Result<()> {
     let appdata = AppData::read()?;
     let network_config = appdata.config()?;
-    let mut hasher = DefaultHasher::new();
-    network_config.hash(&mut hasher);
-    let network_hash = hasher.finish();
+    let network_hash = network_config.portable_hash();
 
     let now = Instant::now();
     let network = discover().await?;

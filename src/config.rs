@@ -1,6 +1,5 @@
 use std::{
     cmp::Ordering,
-    hash::{DefaultHasher, Hash, Hasher},
     path::PathBuf,
     sync::Arc,
 };
@@ -157,29 +156,6 @@ pub fn command_config_messages_list(node: Option<String>, bus: Option<String>) -
     Ok(())
 }
 
-pub fn command_config_messages_hash() -> Result<()> {
-    let appdata = AppData::read()?;
-    let network = appdata.config()?;
-    let mut messages = network.messages().clone();
-    messages.sort_by(|a, b| {
-        let no = a.name().cmp(b.name());
-        if no == Ordering::Equal {
-            a.bus().name().cmp(b.bus().name())
-        } else {
-            no
-        }
-    });
-
-    let mut hash = DefaultHasher::new();
-    for msg in messages {
-        hash.write_u32(msg.id().as_u32());
-    }
-    let hash = hash.finish();
-    println!("{hash:X}");
-
-    Ok(())
-}
-
 pub fn command_config_check() -> Result<()> {
     let appdata = AppData::read()?;
     let _ = appdata.config()?;
@@ -189,9 +165,7 @@ pub fn command_config_check() -> Result<()> {
 pub fn command_config_hash() -> Result<()> {
     let appdata = AppData::read()?;
     let network = appdata.config()?;
-    let mut hasher = DefaultHasher::new();
-    network.hash(&mut hasher);
 
-    println!("{}", hasher.finish());
+    println!("{}", network.portable_hash());
     Ok(())
 }
