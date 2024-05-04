@@ -23,6 +23,7 @@ tokio = { version = "1.37.0", features = ["full"] }
 common-path = "1.0.0"
 color-print = "0.3.6"
 chrono = "0.4.38"
+build-time = "0.1.3"
 
 [features]
 default = []

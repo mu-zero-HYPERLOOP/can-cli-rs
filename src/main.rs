@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use build_time::build_time_local;
 use clap::{Parser, Subcommand};
 use config::command_config_get;
 
@@ -87,6 +88,7 @@ enum Command {
         #[arg(short='s', long="socketcan", action = clap::ArgAction::SetTrue)]
         socketcan: bool,
     },
+    Version
 }
 
 #[derive(Subcommand, Debug)]
@@ -188,6 +190,10 @@ async fn main() {
             Command::Dump { messages, ids } => command_dump(messages, ids).await,
             Command::Status => command_status().await,
             Command::Update { socketcan } => command_update_self(socketcan),
+            Command::Version => {
+                println!("build-time : {}", build_time_local!());
+                Ok(())
+            }
         },
         None => Err(Error::NotYetImplemented),
     };
