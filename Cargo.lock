@@ -236,7 +236,7 @@ dependencies = [
 [[package]]
 name = "canzero-config"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-config.git#3b04f9113382184e972c3744a2a0bde2e7d2ffba"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-config.git#6d4db07da6bfae656f736466f1497f121e9a2a02"
 dependencies = [
  "bit_reverse",
  "can-dbc",
