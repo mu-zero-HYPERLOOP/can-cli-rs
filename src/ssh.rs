@@ -5,9 +5,6 @@ use serde_yaml::from_str;
 
 use crate::errors::{Error, Result};
 
-const BROADCAST_PORT: u16 = 9002u16;
-const SERVICE_NAME: &'static str = "CANzero";
-
 pub async fn scan_ssh() -> Result<Option<NetworkDescription>> {
     loop {
         let scanner = UdpNetworkScanner::create().await?;

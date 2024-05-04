@@ -148,6 +148,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "build-time"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1219c19fc29b7bfd74b7968b420aff5bc951cf517800176e795d6b2300dd382"
+dependencies = [
+ "chrono",
+ "once_cell",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.60",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -232,7 +245,7 @@ dependencies = [
 [[package]]
 name = "canzero-server"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-server.git#838ed6894f4de9824a22a6c92d7d7fcf98f46168"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-server.git#e609291eadf0acba9194d53af8e079fe9c3af0c7"
 dependencies = [
  "bincode",
  "canzero-appdata",
@@ -279,9 +292,12 @@ dependencies = [
 [[package]]
 name = "canzero-udp"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-udp.git#02d1c0c4bf830e2a4345ce7c47ab0d5d4c332011"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-udp.git#fafa1764d8e15248e0a99ce0689d1fe7cd7b133a"
 dependencies = [
  "bincode",
+ "build-time",
+ "canzero-config",
+ "chrono",
  "color-print",
  "serde",
  "tokio",

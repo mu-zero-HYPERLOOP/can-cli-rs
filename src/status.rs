@@ -9,6 +9,7 @@ use canzero_appdata::AppData;
 use canzero_common::{CanFrame, NetworkFrame, TNetworkFrame};
 use canzero_config::config;
 use canzero_tcp::tcpcan::TcpCan;
+use color_print::cprintln;
 
 use crate::{dump::discover, errors::{Error, Result}};
 
@@ -65,6 +66,7 @@ pub async fn command_status() -> Result<()> {
 
     let tcpcan = Arc::new(canzero_tcp::tcpcan::TcpCan::new(stream));
 
+
     let get_req = network_config.get_req_message();
 
     let (req_id, req_ide) = match get_req.id() {
@@ -72,6 +74,12 @@ pub async fn command_status() -> Result<()> {
         config::MessageId::ExtendedId(id) => (id, true),
     };
     let get_req_bus_id = network_config.get_req_message().bus().id();
+
+    if network.config_hash == network_hash {
+        cprintln!("{:25} : <green> {:7}</green> ({})", "SERVER", "ONLINE", network.build_time);
+    }else {
+        cprintln!("{:25} : <yellow> {:7}</yellow> ({})", "SERVER", "DESYNC", network.build_time);
+    }
 
     for node in network_config.nodes() {
         let config_hash_oe = node
@@ -114,12 +122,12 @@ pub async fn command_status() -> Result<()> {
         {
             let rx_time = Instant::now().duration_since(send_time);
             if hash == network_hash {
-                println!("{:25} : \x1b[0;32m {:7}\x1b[0m ({}ms)", node.name(), "ONLINE", rx_time.as_millis());
+                println!("{:25} : <green> {:7}</green> ({}ms)", node.name(), "ONLINE", rx_time.as_millis());
             }else {
-                println!("{:25} : \x1b[0;33m {:7}\x1b[0m ({}ms)", node.name(), "DESYNC", rx_time.as_millis());
+                println!("{:25} : <yellow> {:7}</yellow> ({}ms)", node.name(), "DESYNC", rx_time.as_millis());
             }
         }else {
-            println!("{:25} : \x1b[0;31m {:7}\x1b[0m", node.name(), "OFFLINE");
+            println!("{:25} : <red> {:7}</red>", node.name(), "OFFLINE");
         }
     }
 
