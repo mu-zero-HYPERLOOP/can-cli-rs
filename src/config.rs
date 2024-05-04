@@ -15,7 +15,12 @@ pub fn command_config_show() -> Result<()> {
 }
 
 pub fn command_config_nodes_list() -> Result<()> {
-    Err(Error::NotYetImplemented)
+    let appdata = AppData::read()?;
+    let network = appdata.config()?;
+    for node in network.nodes() {
+        println!("{:15} {:3}", node.name(), node.id());
+    }
+    Ok(())
 }
 
 pub fn command_config_object_entries_list(node: String) -> Result<()> {
@@ -61,7 +66,7 @@ pub fn command_config_object_entries_list(node: String) -> Result<()> {
         println!("[{}] = {} : {}", oe.id(), oe.name(), ty_to_name(oe.ty()));
     }
 
-    Err(Error::NotYetImplemented)
+    Ok(())
 }
 
 pub fn command_config_set(path: PathBuf) -> Result<()> {
@@ -177,7 +182,7 @@ pub fn command_config_messages_hash() -> Result<()> {
 
 pub fn command_config_check() -> Result<()> {
     let appdata = AppData::read()?;
-    let network = appdata.config()?;
+    let _ = appdata.config()?;
     Ok(())
 }
 

@@ -123,7 +123,6 @@ enum ConfigShowCommand {
     },
     Nodes,
     ObjectEntries {
-        #[arg(short, long)]
         node: String,
     },
 }
