@@ -235,13 +235,13 @@ dependencies = [
 [[package]]
 name = "canzero-config"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-config.git#3c853c08c77838154e367296be30c19bb53ce66a"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-config.git#3b04f9113382184e972c3744a2a0bde2e7d2ffba"
 dependencies = [
  "bit_reverse",
  "can-dbc",
  "chrono",
- "highway",
  "regex",
+ "seahash",
 ]
 
 [[package]]
@@ -692,12 +692,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231dfb89cfffdbc30e7fc41579ed6066ad03abda9e567ccafae602b97ec5024"
 
 [[package]]
-name = "highway"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4ba82c000837f4e74df01a5520f0dc48735d4aed955a99eae4428bab7cf3acd"
-
-[[package]]
 name = "iana-time-zone"
 version = "0.1.60"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1115,6 +1109,12 @@ name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+
+[[package]]
+name = "seahash"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c107b6f4780854c8b126e228ea8869f4d7b71260f962fefb57b996b8959ba6b"
 
 [[package]]
 name = "serde"
