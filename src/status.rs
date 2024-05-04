@@ -9,10 +9,13 @@ use canzero_appdata::AppData;
 use canzero_common::{CanFrame, NetworkFrame, TNetworkFrame};
 use canzero_config::config;
 use canzero_tcp::tcpcan::TcpCan;
+use chrono::{DateTime, Datelike, Timelike};
 use color_print::cprintln;
 
-use crate::{dump::discover, errors::{Error, Result}};
-
+use crate::{
+    dump::discover,
+    errors::{Error, Result},
+};
 
 pub async fn rx_get_resp_hash_code(
     tcpcan: Arc<TcpCan>,
@@ -66,7 +69,6 @@ pub async fn command_status() -> Result<()> {
 
     let tcpcan = Arc::new(canzero_tcp::tcpcan::TcpCan::new(stream));
 
-
     let get_req = network_config.get_req_message();
 
     let (req_id, req_ide) = match get_req.id() {
@@ -75,10 +77,33 @@ pub async fn command_status() -> Result<()> {
     };
     let get_req_bus_id = network_config.get_req_message().bus().id();
 
+    let server_build_time = DateTime::parse_from_rfc3339(&network.build_time).unwrap();
+
+    println!("network hash = {}", network.config_hash);
     if network.config_hash == network_hash {
-        cprintln!("{:25} : <green> {:7}</green> ({})", "SERVER", "ONLINE", network.build_time);
-    }else {
-        cprintln!("{:25} : <yellow> {:7}</yellow> ({})", "SERVER", "DESYNC", network.build_time);
+        cprintln!(
+            "{:25} : <green> {:7}</green> ({:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2})",
+            "SERVER",
+            "ONLINE",
+            server_build_time.year(),
+            server_build_time.month(),
+            server_build_time.day(),
+            server_build_time.hour(),
+            server_build_time.minute(),
+            server_build_time.second()
+        );
+    } else {
+        cprintln!(
+            "{:25} : <yellow> {:7}</yellow> ({:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2})",
+            "SERVER",
+            "DESYNC",
+            server_build_time.year(),
+            server_build_time.month(),
+            server_build_time.day(),
+            server_build_time.hour(),
+            server_build_time.minute(),
+            server_build_time.second()
+        );
     }
 
     for node in network_config.nodes() {
@@ -91,7 +116,6 @@ pub async fn command_status() -> Result<()> {
         req_data |= config_hash_oe.id() as u64;
         req_data |= 0xFF << 13;
         req_data |= (node.id() as u64) << (13 + 8);
-
 
         let get_req_frame = CanFrame::new(*req_id, req_ide, false, get_req.dlc(), req_data);
         // spawn receiver
@@ -122,12 +146,32 @@ pub async fn command_status() -> Result<()> {
         {
             let rx_time = Instant::now().duration_since(send_time);
             if hash == network_hash {
-                println!("{:25} : <green> {:7}</green> ({}ms)", node.name(), "ONLINE", rx_time.as_millis());
-            }else {
-                println!("{:25} : <yellow> {:7}</yellow> ({}ms)", node.name(), "DESYNC", rx_time.as_millis());
+                cprintln!(
+                    "{:25} : <green> {:7}</green> ({:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2})",
+                    node.name(),
+                    "ONLINE",
+                    server_build_time.year(),
+                    server_build_time.month(),
+                    server_build_time.day(),
+                    server_build_time.hour(),
+                    server_build_time.minute(),
+                    server_build_time.second()
+                );
+            } else {
+                cprintln!(
+                    "{:25} : <yellow> {:7}</yellow> ({:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2})",
+                    node.name(),
+                    "DESYNC",
+                    server_build_time.year(),
+                    server_build_time.month(),
+                    server_build_time.day(),
+                    server_build_time.hour(),
+                    server_build_time.minute(),
+                    server_build_time.second()
+                );
             }
-        }else {
-            println!("{:25} : <red> {:7}</red>", node.name(), "OFFLINE");
+        } else {
+            cprintln!("{:25} : <red> {:7}</red>", node.name(), "OFFLINE");
         }
     }
 

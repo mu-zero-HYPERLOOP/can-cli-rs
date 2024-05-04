@@ -206,6 +206,7 @@ dependencies = [
  "canzero-socketcan",
  "canzero-tcp",
  "canzero-udp",
+ "chrono",
  "clap",
  "color-print",
  "common-path",
@@ -218,7 +219,7 @@ dependencies = [
 [[package]]
 name = "canzero-codegen"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-codegen.git#c9db9a894969be52cf24c83583fb3ba900417ffe"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-codegen.git#42cc79d4ec5a7efa8fc49259aa4a693733797eae"
 dependencies = [
  "canzero-config",
 ]
@@ -292,7 +293,7 @@ dependencies = [
 [[package]]
 name = "canzero-udp"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-udp.git#fafa1764d8e15248e0a99ce0689d1fe7cd7b133a"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-udp.git#c6a87f788b5da2cf971c8edb1c4da376e0f41020"
 dependencies = [
  "bincode",
  "build-time",
