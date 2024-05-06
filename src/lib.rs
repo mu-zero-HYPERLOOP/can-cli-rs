@@ -37,7 +37,6 @@ mod update;
 #[command(
     version,
     about = "Canzero is a CAN toolchain for fast prototyping",
-    arg_required_else_help = true
 )]
 struct Cli {
     #[command(subcommand)]
@@ -195,7 +194,7 @@ pub async fn run_cli() -> bool {
                 Ok(())
             }
         },
-        None => Err(Error::NotYetImplemented),
+        None => return true,
     };
     if let Err(err) = res {
         eprintln!("{err:?}");
