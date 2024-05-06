@@ -145,7 +145,8 @@ enum ClientCommand {
     Start,
 }
 
-pub async fn run_cli() {
+/// returns true iff. the gui should be started!
+pub async fn run_cli() -> bool {
     let cli = Cli::parse();
     let res = match cli.command {
         Some(cmd) => match cmd {
@@ -171,7 +172,7 @@ pub async fn run_cli() {
                 node_name,
                 output_dir,
             } => command_generate(&node_name, &output_dir),
-            Command::Gui => Err(Error::NotYetImplemented),
+            Command::Gui => return true,
             Command::Server { command } => match command {
                 ServerCommand::Start => command_server().await,
                 ServerCommand::Scan => command_scan().await,
@@ -199,5 +200,6 @@ pub async fn run_cli() {
     if let Err(err) = res {
         eprintln!("{err:?}");
     }
+    return false;
 }
 
