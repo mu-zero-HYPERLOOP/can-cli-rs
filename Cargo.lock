@@ -248,7 +248,7 @@ dependencies = [
 [[package]]
 name = "canzero-server"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-server.git#e609291eadf0acba9194d53af8e079fe9c3af0c7"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-server.git#babcce847ae557dc87f455004e5e349b12ff29b2"
 dependencies = [
  "bincode",
  "canzero-appdata",
@@ -284,7 +284,7 @@ dependencies = [
 [[package]]
 name = "canzero-tcp"
 version = "0.1.0"
-source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-tcp.git#d95d946cae9fcf1c22e7ad0f9b311abecefb1963"
+source = "git+https://github.com/mu-zero-HYPERLOOP/canzero-tcp.git#45c6e3db316008e18281d19e203954720d43da25"
 dependencies = [
  "bincode",
  "canzero-common",
