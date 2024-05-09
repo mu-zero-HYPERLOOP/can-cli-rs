@@ -1,17 +1,17 @@
 use std::{net::IpAddr, str::FromStr};
 
-use can_appdata::AppData;
+use canzero_appdata::AppData;
 
 use crate::{
     errors::{Error, Result},
     ssh::scan_ssh,
 };
 
-const CANZERO_CLI_REPO: &'static str = "https://github.com/mu-zero-HYPERLOOP/can-cli-rs.git";
+const CANZERO_CLI_REPO: &'static str = "https://github.com/mu-zero-HYPERLOOP/canzero-cli.git";
 const CANZERO_CLI_PATH: &'static str = "canzero-cli";
 
 const PI_ARCH: &'static str = "armv7-unknown-linux-gnueabihf";
-const CANZERO_CLI_BIN_NAME: &'static str = "canzero";
+const CANZERO_CLI_BIN_NAME: &'static str = "canzero-cli";
 
 pub async fn command_update_server(
     host: Option<String>,
@@ -114,9 +114,7 @@ $ rustup target add {PI_ARCH}"
             };
             nd.server_addr
         };
-        let mut config_files =
-            can_yaml_config_rs::parse_yaml_config_files_from_file(config_path.to_str().unwrap())
-                .unwrap();
+        let mut config_files = appdata.config_files()?;
         config_files.push(config_path.clone());
         let config_dir = common_path::common_path_all(config_files.iter().map(|p| p.as_path()))
             .expect("Failed to find common network-config directory");
@@ -170,7 +168,7 @@ $ rustup target add {PI_ARCH}"
             .arg("-i")
             .arg("~/.ssh/mu-zero")
             .arg(canzero_cli_bin_path)
-            .arg(&format!("pi@{ip_addr:?}:/home/pi/.canzero"))
+            .arg(&format!("pi@{ip_addr:?}:/home/pi/.canzero/canzero"))
             .spawn()
             .unwrap()
             .wait()
@@ -229,8 +227,9 @@ pub fn command_update_self(socketcan: bool) -> Result<()> {
     command
         .arg("install")
         .arg("--git")
-        .arg("https://github.com/mu-zero-HYPERLOOP/can-cli-rs");
+        .arg("https://github.com/mu-zero-HYPERLOOP/canzero-cli.git");
     if socketcan {
+        println!("Enabling feature socket-can");
         command.arg("--features").arg("socket-can");
     }
     command.spawn().unwrap().wait().unwrap();

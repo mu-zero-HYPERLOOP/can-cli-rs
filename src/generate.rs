@@ -1,6 +1,6 @@
-use std::{path::{Path, PathBuf}, str::FromStr};
+use std::path::{Path, PathBuf};
 
-use can_appdata::AppData;
+use canzero_appdata::AppData;
 
 use crate::errors::{Error, Result};
 
@@ -16,15 +16,7 @@ fn rec_create_dir(dir : &Path) -> Result<()>{
 
 pub fn command_generate(node_name : &str, output_dir : &PathBuf) -> Result<()> {
     let appdata = AppData::read()?;
-    let Some(config_path) = appdata.get_config_path() else {
-        eprintln!("No path to config was set");
-        return Ok(());
-    };
-    let network_config = can_yaml_config_rs::parse_yaml_config_from_file(
-        config_path
-            .to_str()
-            .expect("Fuck you for using non utf8 file names"),
-    )?;
+    let network_config = appdata.config()?;
     let output_dir = output_dir.clone();
     if !output_dir.exists() {
         return Err(Error::FileNotFound(output_dir.to_str().unwrap().to_owned()));
@@ -32,7 +24,7 @@ pub fn command_generate(node_name : &str, output_dir : &PathBuf) -> Result<()> {
     
     rec_create_dir(&output_dir)?;
 
-    let mut options = can_c_codegen_rs::options::Options::default();
+    let mut options = canzero_codegen::options::Options::default();
 
     let mut source_file_path = output_dir.clone();
     source_file_path.push("canzero.cpp");
@@ -42,7 +34,7 @@ pub fn command_generate(node_name : &str, output_dir : &PathBuf) -> Result<()> {
     header_file_path.push("canzero.h");
     options.set_header_file_path(header_file_path.to_str().unwrap());
 
-    can_c_codegen_rs::generate(node_name, network_config, options)?;
+    canzero_codegen::generate(node_name, network_config, options)?;
 
     Ok(())
 }

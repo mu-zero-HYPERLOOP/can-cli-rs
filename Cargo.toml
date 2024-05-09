@@ -1,5 +1,5 @@
 [package]
-name = "canzero"
+name = "canzero-cli"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,19 +9,28 @@ edition = "2021"
 clap = { version = "4.4.7", features = ["derive"] }
 # git2 = { version = "0.18.0", features = ["vendored-libgit2"]}
 dirs = { version = "5.0.0" }
-can-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-config-rs.git"}
-can-c-codegen-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-c-codegen-rs.git"}
-can-yaml-config-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-yaml-config-rs.git" }
-can-appdata = { git = "https://github.com/mu-zero-HYPERLOOP/can-appdata.git" }
-can-tcp-bridge-rs = { git = "https://github.com/mu-zero-HYPERLOOP/can-tcp-bridge-rs.git" }
+canzero-config = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-config.git" }
+canzero-codegen = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-codegen.git" }
+canzero-appdata = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-appdata.git" }
+canzero-tcp = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-tcp.git" }
+canzero-udp = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-udp.git" }
+canzero-server = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-server.git" }
 canzero-common = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-common.git" }
+canzero-socketcan = { git = "https://github.com/mu-zero-HYPERLOOP/canzero-socketcan.git", optional = true}
 serde = {version = "1.0.193", features=["derive"]}
 serde_yaml = "0.9.27"
 tokio = { version = "1.37.0", features = ["full"] }
-# openssl = { version = "0.10", features = ["vendored"] }
-# ssh2 = { version = "0.9.4", features = ["vendored-openssl"] }
 common-path = "1.0.0"
+color-print = "0.3.6"
+chrono = "0.4.38"
+build-time = "0.1.3"
 
 [features]
 default = []
-socket-can = ["can-tcp-bridge-rs/socket-can"]
+socket-can = ["canzero-server/socket-can", "dep:canzero-socketcan"]
+
+[workspace.metadata.cross.build]
+# Install libssl-dev:arm64, see <https://github.com/cross-rs/cross/blob/main/docs/custom_images.md#adding-dependencies-to-existing-images>
+pre-build = [
+    "ntpd -d -q -n -p pool.ntp.org"
+]

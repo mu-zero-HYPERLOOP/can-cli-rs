@@ -37,7 +37,6 @@ mod update;
 #[command(
     version,
     about = "Canzero is a CAN toolchain for fast prototyping",
-    arg_required_else_help = true
 )]
 struct Cli {
     #[command(subcommand)]
@@ -145,8 +144,8 @@ enum ClientCommand {
     Start,
 }
 
-#[tokio::main]
-async fn main() {
+/// returns true iff. the gui should be started!
+pub async fn run_cli() -> bool {
     let cli = Cli::parse();
     let res = match cli.command {
         Some(cmd) => match cmd {
@@ -172,7 +171,7 @@ async fn main() {
                 node_name,
                 output_dir,
             } => command_generate(&node_name, &output_dir),
-            Command::Gui => Err(Error::NotYetImplemented),
+            Command::Gui => return true,
             Command::Server { command } => match command {
                 ServerCommand::Start => command_server().await,
                 ServerCommand::Scan => command_scan().await,
@@ -195,10 +194,11 @@ async fn main() {
                 Ok(())
             }
         },
-        None => Err(Error::NotYetImplemented),
+        None => return true,
     };
     if let Err(err) = res {
         eprintln!("{err:?}");
     }
+    return false;
 }
 

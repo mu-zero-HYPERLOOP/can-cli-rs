@@ -1,12 +1,11 @@
 use std::{
     cmp::Ordering,
-    hash::{DefaultHasher, Hash, Hasher},
     path::PathBuf,
     sync::Arc,
 };
 
-use can_appdata::AppData;
-use can_config_rs::config::Type;
+use canzero_appdata::AppData;
+use canzero_config::config::{self, Type};
 
 use crate::errors::{Error, Result};
 
@@ -15,29 +14,27 @@ pub fn command_config_show() -> Result<()> {
 }
 
 pub fn command_config_nodes_list() -> Result<()> {
-    Err(Error::NotYetImplemented)
+    let appdata = AppData::read()?;
+    let network = appdata.config()?;
+    for node in network.nodes() {
+        println!("{:15} {:3}", node.name(), node.id());
+    }
+    Ok(())
 }
 
 pub fn command_config_object_entries_list(node: String) -> Result<()> {
     let appdata = AppData::read()?;
-    match appdata.get_config_path() {
-        Some(path) => println!("{path:?}"),
-        None => println!("No path to config specificied"),
-    }
-    let Some(config_path) = appdata.get_config_path() else {
-        return Err(Error::NoConfigSelected);
-    };
-    let network = can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
+    let network = appdata.config()?;
     let Some(node) = network.nodes().iter().find(|n| n.name() == node) else {
         return Err(Error::InvalidNodeName(node));
     };
     for oe in node.object_entries() {
         fn ty_to_name(ty: &Type) -> String {
             match ty {
-                can_config_rs::config::Type::Primitive(prim) => match prim {
-                    can_config_rs::config::SignalType::UnsignedInt { size } => format!("u{size}"),
-                    can_config_rs::config::SignalType::SignedInt { size } => format!("i{size}"),
-                    can_config_rs::config::SignalType::Decimal {
+                config::Type::Primitive(prim) => match prim {
+                    config::SignalType::UnsignedInt { size } => format!("u{size}"),
+                    config::SignalType::SignedInt { size } => format!("i{size}"),
+                    config::SignalType::Decimal {
                         size,
                         offset,
                         scale,
@@ -47,20 +44,20 @@ pub fn command_config_object_entries_list(node: String) -> Result<()> {
                         format!("d{size}<{min}..{max}> (scale = {scale})")
                     }
                 },
-                can_config_rs::config::Type::Struct {
+                config::Type::Struct {
                     name,
                     description: _,
                     attribs: _,
                     visibility: _,
                 } => format!("{name}"),
-                can_config_rs::config::Type::Enum {
+                config::Type::Enum {
                     name,
                     description: _,
                     size: _,
                     entries: _,
                     visibility: _,
                 } => format!("{name}"),
-                can_config_rs::config::Type::Array { len, ty } => {
+                config::Type::Array { len, ty } => {
                     format!("{}[{len}", ty_to_name(ty))
                 }
             }
@@ -68,7 +65,7 @@ pub fn command_config_object_entries_list(node: String) -> Result<()> {
         println!("[{}] = {} : {}", oe.id(), oe.name(), ty_to_name(oe.ty()));
     }
 
-    Err(Error::NotYetImplemented)
+    Ok(())
 }
 
 pub fn command_config_set(path: PathBuf) -> Result<()> {
@@ -88,14 +85,7 @@ pub fn command_config_get() -> Result<()> {
 
 pub fn command_config_messages_list(node: Option<String>, bus: Option<String>) -> Result<()> {
     let appdata = AppData::read()?;
-    match appdata.get_config_path() {
-        Some(path) => println!("{path:?}"),
-        None => println!("No path to config specificied"),
-    }
-    let Some(config_path) = appdata.get_config_path() else {
-        return Err(Error::NoConfigSelected);
-    };
-    let network = can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
+    let network = appdata.config()?;
 
     if let Some(bus_name) = &bus {
         if !network.buses().iter().any(|b| b.name() == bus_name) {
@@ -166,62 +156,16 @@ pub fn command_config_messages_list(node: Option<String>, bus: Option<String>) -
     Ok(())
 }
 
-pub fn command_config_messages_hash() -> Result<()> {
-    let appdata = AppData::read()?;
-    match appdata.get_config_path() {
-        Some(path) => println!("{path:?}"),
-        None => println!("No path to config specificied"),
-    }
-    let Some(config_path) = appdata.get_config_path() else {
-        return Err(Error::NoConfigSelected);
-    };
-    let network = can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
-    let mut messages = network.messages().clone();
-    messages.sort_by(|a, b| {
-        let no = a.name().cmp(b.name());
-        if no == Ordering::Equal {
-            a.bus().name().cmp(b.bus().name())
-        } else {
-            no
-        }
-    });
-
-    let mut hash = DefaultHasher::new();
-    for msg in messages {
-        hash.write_u32(msg.id().as_u32());
-    }
-    let hash = hash.finish();
-    println!("{hash:X}");
-
-    Ok(())
-}
-
 pub fn command_config_check() -> Result<()> {
     let appdata = AppData::read()?;
-    match appdata.get_config_path() {
-        Some(path) => println!("{path:?}"),
-        None => println!("No path to config specificied"),
-    }
-    let Some(config_path) = appdata.get_config_path() else {
-        return Err(Error::NoConfigSelected);
-    };
-    can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
+    let _ = appdata.config()?;
     Ok(())
 }
 
 pub fn command_config_hash() -> Result<()> {
     let appdata = AppData::read()?;
-    match appdata.get_config_path() {
-        Some(path) => println!("{path:?}"),
-        None => println!("No path to config specificied"),
-    }
-    let Some(config_path) = appdata.get_config_path() else {
-        return Err(Error::NoConfigSelected);
-    };
-    let network = can_yaml_config_rs::parse_yaml_config_from_file(config_path.to_str().unwrap())?;
-    let mut hasher = DefaultHasher::new();
-    network.hash(&mut hasher);
+    let network = appdata.config()?;
 
-    println!("{}", hasher.finish());
+    println!("{}", network.portable_hash());
     Ok(())
 }
